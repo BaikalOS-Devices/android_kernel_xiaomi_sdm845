@@ -49,14 +49,32 @@ if ! [ -a $zimage ];
 then
 echo -e "$red << Failed to compile zImage, fix the errors first >>$white"
 else
-echo -e "$yellow\n Build successful \n $white"
+cd $KERNEL_DIR/build/
+rm *.zip > /dev/null 2>&1
+echo -e "$yellow\n Build successful, generating flashable zip now \n $white"
 End=$(date +"%s")
 Diff=$(($End - $Start))
+rm -rf dtbs
+mv $KERNEL_DIR/out/arch/arm64/boot/dts/qcom/ $KERNEL_DIR/build/
+mv $KERNEL_DIR/build/qcom $KERNEL_DIR/build/dtbs
+cd $KERNEL_DIR/build/dtbs/
+rm modules.order
+cp $KERNEL_DIR/out/arch/arm64/boot/Image.gz $KERNEL_DIR/build/kernel/
+cd $KERNEL_DIR/build/
+echo -n " Enter release version:"
+read rv
+zip -r shadow-$DEVICE-$VERSION-$rv-$date.zip * > /dev/null
+echo -n "Upload zip to gdrive ? Y/N:"
+read gd
+if [ $gd == Y ]; then
+gdrive upload shadow-$DEVICE-$VERSION-$rv-$date.zip
+fi
 echo -e "$gre << Build completed in $(($Diff / 60)) minutes and $(($Diff % 60)) seconds >> \n $white"
 fi
-cd $KERNEL_DIR
 elif [ $qc == 2 ]; then
-make menuconfig
+make O=out clean
+make O=out shadow_defconfig
+make O=out menuconfig
 ./shadow.sh
 elif [ $qc == 3 ]; then
 echo -e "$yellow Cleaning... \n$white"
