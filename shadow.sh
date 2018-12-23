@@ -27,8 +27,6 @@ echo -n " Enter your choice:"
 read qc
 echo -e "$white"
 KERNEL_DIR=$PWD
-export ARCH=arm64
-export CROSS_COMPILE="/home/$USER/toolchain/gcc-linaro-7.3.1/bin/aarch64-linux-gnu-"
 if [ $qc == 1 ]; then
 echo -e "$yellow Building Kernel \n $white"
 Start=$(date +"%s")
@@ -36,11 +34,15 @@ echo -e "$yellow Running make clean before compiling \n$white"
 make clean && make mrproper
 make O=out clean
 make O=out mrproper
-make O=out shadow_defconfig
+make O=out ARCH=arm64 shadow_defconfig
 
 export KBUILD_BUILD_HOST="gcp"
 export KBUILD_BUILD_USER="energyspear17"
-make O=out -j$(nproc --all)
+make -j$(nproc --all) O=out \
+                      ARCH=arm64 \
+                      CC="/home/$USER/toolchain/dtc/out/8.0/bin/clang" \
+                      CLANG_TRIPLE=aarch64-linux-gnu- \
+                      CROSS_COMPILE="/home/$USER/toolchain/gcc-linaro-7.3.1/bin/aarch64-linux-gnu-"
 time=$(date +"%d-%m-%y-%T")
 date=$(date +"%d-%m-%y")
 
