@@ -34,6 +34,7 @@ echo -e "$yellow Running make clean before compiling \n$white"
 make clean && make mrproper
 make O=out clean
 make O=out mrproper
+rm $KERNEL_DIR/out/arch/arm64/boot/Image
 make O=out ARCH=arm64 shadow_defconfig
 
 export KBUILD_BUILD_HOST="gcp"
