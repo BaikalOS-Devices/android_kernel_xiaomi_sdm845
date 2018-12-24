@@ -18,4 +18,3 @@ on property:sys.boot_completed=1
     write /proc/sys/vm/vfs_cache_pressure 100
     write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1
     write /sys/module/sync/parameters/fsync_enabled 0
-    write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 0
