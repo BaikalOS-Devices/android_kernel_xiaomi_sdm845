@@ -27,14 +27,6 @@ ramdisk_compression=auto;
 chmod -R 750 $ramdisk/*;
 chown -R root:root $ramdisk/*;
 
-# Save the users from themselves
-android_version="$(file_getprop /system/build.prop "ro.build.version.release")";
-supported_version=9;
-if [ "$android_version" != "$supported_version" ]; then
-  ui_print " "; ui_print "You are on Android $android_version but this kernel is only for Android $supported_version!";
-  exit 1;
-fi;
-
 ## AnyKernel install
 dump_boot;
 
