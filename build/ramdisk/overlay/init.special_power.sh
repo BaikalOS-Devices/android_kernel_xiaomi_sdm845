@@ -26,7 +26,7 @@ function writepid_sbg() {
 sleep 10;
 
 write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1766400
-write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 1843200
+write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 2803200
 write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 300000
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 825600
 write /sys/module/cpu_boost/parameters/input_boost_freq "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
