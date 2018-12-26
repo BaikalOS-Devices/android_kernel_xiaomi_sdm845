@@ -76,7 +76,7 @@ echo -e "$gre << Build completed in $(($Diff / 60)) minutes and $(($Diff % 60)) 
 fi
 elif [ $qc == 2 ]; then
 make O=out clean
-make O=out shadow_defconfig
+make O=out ARCH=arm64 shadow_defconfig
 make O=out menuconfig
 ./shadow.sh
 elif [ $qc == 3 ]; then
