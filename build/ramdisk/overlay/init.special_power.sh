@@ -31,6 +31,17 @@ write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 300000
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 825600
 write /sys/module/cpu_boost/parameters/input_boost_freq "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
 write /sys/module/cpu_boost/parameters/input_boost_ms 55
+write /sys/module/cpu_boost/parameters/dynamic_stune_boost 0
+write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz
+write /sys/block/sda/queue/scheduler maple
+write /sys/block/sdf/queue/scheduler maple
+write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 0
+write /sys/module/adreno_idler/parameters/adreno_idler_active Y
+write /sys/module/msm_performance/parameters/touchboost 0
+write /proc/sys/vm/swappiness 40
+write /proc/sys/vm/vfs_cache_pressure 100
+write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1
+write /sys/module/sync/parameters/fsync_enabled 0
 
 write /sys/block/sda/queue/read_ahead_kb 256
 write /sys/block/sdf/queue/read_ahead_kb 256
@@ -60,8 +71,6 @@ write /sys/devices/system/cpu/cpu4/cpufreq/schedutil/iowait_boost_enable 1;
 #write /dev/cpuset/foreground/cpus 0-3,6-7
 #write /dev/cpuset/background/cpus 0-1
 #write /dev/cpuset/system-background/cpus 0-3
-write /proc/sys/vm/swappiness 40
-write /proc/sys/vm/vfs_cache_pressure 100
 sleep 20;
 
 QSEECOMD=`pidof qseecomd`

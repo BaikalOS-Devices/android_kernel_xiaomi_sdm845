@@ -32,7 +32,6 @@ dump_boot;
 
 # Begin Ramdisk Changes
 insert_line init.rc "import /init.spectrum.rc" after "import /init.\${ro.hardware}.rc" "import /init.spectrum.rc";
-insert_line init.rc "import /init.shadow.rc" after "import /init.spectrum.rc" "import /init.shadow.rc";
 
 # If the kernel image and dtbs are separated in the zip
 decompressed_image=/tmp/anykernel/kernel/Image
