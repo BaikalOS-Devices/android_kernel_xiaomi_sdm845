@@ -32,6 +32,8 @@ write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 825600
 write /sys/module/cpu_boost/parameters/input_boost_freq "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
 write /sys/module/cpu_boost/parameters/input_boost_ms 55
 
+write /sys/block/sda/queue/read_ahead_kb 256
+write /sys/block/sdf/queue/read_ahead_kb 256
 
 write /sys/devices/system/cpu/cpu0/cpufreq/schedutil/hispeed_freq 0;
 write /sys/devices/system/cpu/cpu4/cpufreq/schedutil/hispeed_freq 0;
