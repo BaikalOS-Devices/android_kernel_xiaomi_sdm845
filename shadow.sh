@@ -75,9 +75,10 @@ fi
 echo -e "$gre << Build completed in $(($Diff / 60)) minutes and $(($Diff % 60)) seconds >> \n $white"
 fi
 elif [ $qc == 2 ]; then
-make O=out clean
-make O=out ARCH=arm64 shadow_defconfig
-make O=out menuconfig
+export ARCH=arm64
+make shadow_defconfig
+make menuconfig
+mv shadow_defconfig arch/arm64/configs/shadow_defconfig
 ./shadow.sh
 elif [ $qc == 3 ]; then
 echo -e "$yellow Cleaning... \n$white"
