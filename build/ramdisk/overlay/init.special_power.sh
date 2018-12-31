@@ -25,6 +25,8 @@ function writepid_sbg() {
 
 sleep 10;
 
+write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "pixutil"
+write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "pixutil"
 write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1766400
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 2803200
 write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 300000
@@ -36,41 +38,16 @@ write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz
 write /sys/block/sda/queue/scheduler maple
 write /sys/block/sdf/queue/scheduler maple
 write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 0
-write /sys/module/adreno_idler/parameters/adreno_idler_active Y
+write /sys/module/adreno_idler/parameters/adreno_idler_active N
 write /sys/module/msm_performance/parameters/touchboost 0
 write /proc/sys/vm/swappiness 40
 write /proc/sys/vm/vfs_cache_pressure 100
 write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1
-write /sys/module/sync/parameters/fsync_enabled 0
+write /sys/module/sync/parameters/fsync_enabled 1
 
 write /sys/block/sda/queue/read_ahead_kb 256
 write /sys/block/sdf/queue/read_ahead_kb 256
 
-write /sys/devices/system/cpu/cpu0/cpufreq/schedutil/hispeed_freq 0;
-write /sys/devices/system/cpu/cpu4/cpufreq/schedutil/hispeed_freq 0;
-# Enable iowait boost to ramp up the CPU on repeated iowait wakeups
-write /sys/devices/system/cpu/cpu0/cpufreq/schedutil/iowait_boost_enable 1;
-write /sys/devices/system/cpu/cpu4/cpufreq/schedutil/iowait_boost_enable 1;
-
-#write /sys/module/cpu_boost/parameters/input_boost_freq "0:1056000 4:979200";
-#write /sys/module/cpu_boost/parameters/input_boost_ms 1500;
-
-# Setup ZRAM
-#swapoff /dev/block/zram0;
-#echo 1 > /sys/block/zram0/reset;
-#echo 512M > /sys/block/zram0/disksize;
-#mkswap /dev/block/zram0;
-#swapon /dev/block/zram0;
-
-# Set the default IRQ affinity to the silver cluster.
-#write /proc/irq/default_smp_affinity f
-
-# Setup final cpuset
-#write /dev/cpuset/top-app/cpus 0-7
-#write /dev/cpuset/foreground/boost/cpus 0-3,6-7
-#write /dev/cpuset/foreground/cpus 0-3,6-7
-#write /dev/cpuset/background/cpus 0-1
-#write /dev/cpuset/system-background/cpus 0-3
 sleep 20;
 
 QSEECOMD=`pidof qseecomd`
