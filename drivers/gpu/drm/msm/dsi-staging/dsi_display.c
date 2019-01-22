@@ -5445,18 +5445,16 @@ int dsi_display_get_modes(struct dsi_display *display,
 		return -EINVAL;
 	}
 
-	mutex_lock(&display->display_lock);
-	if (display->modes) {
-		pr_debug("return existing mode list\n");
-		goto done;
-	}
-
 	*out_modes = NULL;
+
+	mutex_lock(&display->display_lock);
+
+	if (display->modes)
+		goto exit;
 
 	rc = dsi_display_get_mode_count_no_lock(display, &total_mode_count);
 	if (rc)
 		goto error;
-
 
 	display->modes = kcalloc(total_mode_count, sizeof(*display->modes),
 			GFP_KERNEL);
@@ -5536,7 +5534,7 @@ int dsi_display_get_modes(struct dsi_display *display,
 		}
 	}
 
-done:
+exit:
 	*out_modes = display->modes;
 	rc = 0;
 

@@ -26,7 +26,6 @@
 #include <linux/input.h>
 #include <linux/kthread.h>
 
-static int touchboost = 1;
 
 /* To handle cpufreq min/max request */
 struct cpu_status {
@@ -44,31 +43,13 @@ static struct events events_group;
 static struct task_struct *events_notify_thread;
 
 /**************************sysfs start********************************/
-static int set_touchboost(const char *buf, const struct kernel_param *kp)
-{
-	int val;
-	if (sscanf(buf, "%d\n", &val) != 1)
-		return -EINVAL;
-	touchboost = val;
-	return 0;
-}
-
-static int get_touchboost(char *buf, const struct kernel_param *kp)
-{
-	return snprintf(buf, PAGE_SIZE, "%d", touchboost);
-}
-static const struct kernel_param_ops param_ops_touchboost = {
-	.set = set_touchboost,
-	.get = get_touchboost,
-};
-device_param_cb(touchboost, &param_ops_touchboost, NULL, 0644);
-
 /*
  * Userspace sends cpu#:min_freq_value to vote for min_freq_value as the new
  * scaling_min. To withdraw its vote it needs to enter cpu#:0
  */
 static int set_cpu_min_freq(const char *buf, const struct kernel_param *kp)
 {
+#if 0
 	int i, j, ntokens = 0;
 	unsigned int val, cpu;
 	const char *cp = buf;
@@ -76,9 +57,6 @@ static int set_cpu_min_freq(const char *buf, const struct kernel_param *kp)
 	struct cpufreq_policy policy;
 	cpumask_var_t limit_mask;
 	int ret;
-
-	if (touchboost == 0)
-		return 0;
 
 	while ((cp = strpbrk(cp + 1, " :")))
 		ntokens++;
@@ -88,7 +66,6 @@ static int set_cpu_min_freq(const char *buf, const struct kernel_param *kp)
 		return -EINVAL;
 
 	cp = buf;
-
 	cpumask_clear(limit_mask);
 	for (i = 0; i < ntokens; i += 2) {
 		if (sscanf(cp, "%u:%u", &cpu, &val) != 2)
@@ -128,6 +105,7 @@ static int set_cpu_min_freq(const char *buf, const struct kernel_param *kp)
 			cpumask_clear_cpu(j, limit_mask);
 	}
 	put_online_cpus();
+#endif
 
 	return 0;
 }
@@ -156,6 +134,7 @@ module_param_cb(cpu_min_freq, &param_ops_cpu_min_freq, NULL, 0644);
  */
 static int set_cpu_max_freq(const char *buf, const struct kernel_param *kp)
 {
+#if 0
 	int i, j, ntokens = 0;
 	unsigned int val, cpu;
 	const char *cp = buf;
@@ -163,9 +142,6 @@ static int set_cpu_max_freq(const char *buf, const struct kernel_param *kp)
 	struct cpufreq_policy policy;
 	cpumask_var_t limit_mask;
 	int ret;
-
-	if (touchboost == 0)
-		return 0;
 
 	while ((cp = strpbrk(cp + 1, " :")))
 		ntokens++;
@@ -175,7 +151,6 @@ static int set_cpu_max_freq(const char *buf, const struct kernel_param *kp)
 		return -EINVAL;
 
 	cp = buf;
-
 	cpumask_clear(limit_mask);
 	for (i = 0; i < ntokens; i += 2) {
 		if (sscanf(cp, "%u:%u", &cpu, &val) != 2)
@@ -207,6 +182,7 @@ static int set_cpu_max_freq(const char *buf, const struct kernel_param *kp)
 			cpumask_clear_cpu(j, limit_mask);
 	}
 	put_online_cpus();
+#endif
 
 	return 0;
 }
