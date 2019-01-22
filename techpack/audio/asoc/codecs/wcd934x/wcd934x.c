@@ -169,10 +169,13 @@ enum {
 static struct snd_soc_codec *sound_control_codec_ptr;
 static int custom_hp_left = -100;
 static int custom_hp_right = -100;
+static int custom_mic = -100;
 static int custom_tx7 = -100;
 static int custom_tx8 = -100;
 static int custom_comp1 = -1;
 static int custom_comp2 = -1;
+static int default_comp1 = 0;
+static int default_comp2 = 0;
 static int custom_earpiece_gain = -100;
 #endif
 
@@ -3681,7 +3684,7 @@ static int tavil_config_compander(struct snd_soc_codec *codec, int interp_n,
 				  int event)
 {
 	struct tavil_priv *tavil = snd_soc_codec_get_drvdata(codec);
-	int comp;
+	int comp, value;
 	u16 comp_ctl0_reg, rx_path_cfg0_reg;
 
 	/* EAR does not have compander */
@@ -3691,6 +3694,21 @@ static int tavil_config_compander(struct snd_soc_codec *codec, int interp_n,
 	comp = interp_n - 1;
 	dev_err(codec->dev, "%s: event %d compander %d, enabled %d\n",
 		__func__, event, comp + 1, tavil->comp_enabled[comp]);
+
+
+#ifdef CONFIG_SOUND_CONTROL
+    if( (comp == COMPANDER_1 && custom_comp1 != -1 ) ||
+        (comp == COMPANDER_2 && custom_comp2 != -1 ) )
+    {
+        if( comp == COMPANDER_1 ) value = custom_comp1;
+        else value = custom_comp2;
+
+        tavil->comp_enabled[comp] = value;
+    	dev_err(codec->dev, "%s: Compander %d custom override %d\n",
+    		 __func__, comp + 1, value);
+    }
+#endif
+
 
 	if (!tavil->comp_enabled[comp])
 		return 0;
@@ -5665,6 +5683,11 @@ static int tavil_compander_put(struct snd_kcontrol *kcontrol,
 	dev_err(codec->dev, "%s: Compander %d enable current %d, new %d\n",
 		 __func__, comp + 1, tavil->comp_enabled[comp], value);
 
+
+#ifdef CONFIG_SOUND_CONTROL
+    if( comp == COMPANDER_1 ) default_comp1 = value;
+    if( comp == COMPANDER_2 ) default_comp2 = value;
+
     if( (comp == COMPANDER_1 && custom_comp1 != -1 ) ||
         (comp == COMPANDER_2 && custom_comp2 != -1 ) )
     {
@@ -5674,6 +5697,7 @@ static int tavil_compander_put(struct snd_kcontrol *kcontrol,
     	dev_err(codec->dev, "%s: Compander %d custom override %d\n",
     		 __func__, comp + 1, value);
     }
+#endif
     
 	tavil->comp_enabled[comp] = value;
 
@@ -10229,14 +10253,14 @@ static ssize_t headphone_gain_store(struct kobject *kobj,
 
 	sscanf(buf, "%d %d", &input_l, &input_r);
 
+	custom_hp_left = input_l;
+	custom_hp_right = input_r;
+
 	if (input_l < -84 || input_l > 20)
 		input_l = 0;
 
 	if (input_r < -84 || input_r > 20)
 		input_r = 0;
-
-	custom_hp_left = input_l;
-	custom_hp_right = input_r;
 
 	snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_RX1_RX_VOL_MIX_CTL, input_l);
 	snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_RX2_RX_VOL_MIX_CTL, input_r);
@@ -10265,10 +10289,20 @@ static ssize_t mic_gain_store(struct kobject *kobj,
 
 	sscanf(buf, "%d", &input);
 
+    custom_mic = input;
+    custom_tx7 = -100;
+    custom_tx8 = -100;
+    if (input == -100 ) input = 0;
 	if (input < -10 || input > 20)
 		input = 0;
 
+    if( custom_mic != -100 ) {
+        custom_tx7 = input;
+        custom_tx8 = input;
+    }
+
 	snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_TX7_TX_VOL_CTL, input);
+	snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_TX8_TX_VOL_CTL, input);
 
 	return count;
 }
@@ -10335,6 +10369,40 @@ static ssize_t comp_store(struct kobject *kobj,
         custom_comp1 = input_2;
     else 
         custom_comp2 = input_2;
+
+    if( input_2 == -1 ) {
+        if( input_1 == 1 ) input_2 = default_comp1;
+        else  input_2 = default_comp2;
+    }
+
+	switch (input_1-1) {
+	case COMPANDER_1:
+		/* Set Gain Source Select based on compander enable/disable */
+		snd_soc_update_bits(sound_control_codec_ptr, WCD934X_HPH_L_EN, 0x20,
+				(input_2 ? 0x00:0x20));
+
+		/* Disable Compander Clock */
+		snd_soc_update_bits(sound_control_codec_ptr, WCD934X_CDC_RX1_RX_PATH_CFG0, 0x02, 0x00);
+		snd_soc_update_bits(sound_control_codec_ptr, WCD934X_CDC_COMPANDER1_CTL0, 0x04, 0x04);
+		snd_soc_update_bits(sound_control_codec_ptr, WCD934X_CDC_COMPANDER1_CTL0, 0x02, 0x02);
+		snd_soc_update_bits(sound_control_codec_ptr, WCD934X_CDC_COMPANDER1_CTL0, 0x02, 0x00);
+		snd_soc_update_bits(sound_control_codec_ptr, WCD934X_CDC_COMPANDER1_CTL0, 0x01, 0x00);
+		snd_soc_update_bits(sound_control_codec_ptr, WCD934X_CDC_COMPANDER1_CTL0, 0x04, 0x00);
+
+		break;
+	case COMPANDER_2:
+		snd_soc_update_bits(sound_control_codec_ptr, WCD934X_HPH_R_EN, 0x20,
+				(input_2 ? 0x00:0x20));
+
+		/* Disable Compander Clock */
+		snd_soc_update_bits(sound_control_codec_ptr, WCD934X_CDC_RX2_RX_PATH_CFG0, 0x02, 0x00);
+		snd_soc_update_bits(sound_control_codec_ptr, WCD934X_CDC_COMPANDER2_CTL0, 0x04, 0x04);
+		snd_soc_update_bits(sound_control_codec_ptr, WCD934X_CDC_COMPANDER2_CTL0, 0x02, 0x02);
+		snd_soc_update_bits(sound_control_codec_ptr, WCD934X_CDC_COMPANDER2_CTL0, 0x02, 0x00);
+		snd_soc_update_bits(sound_control_codec_ptr, WCD934X_CDC_COMPANDER2_CTL0, 0x01, 0x00);
+		snd_soc_update_bits(sound_control_codec_ptr, WCD934X_CDC_COMPANDER2_CTL0, 0x04, 0x00);
+        break;
+    }
 
 	return count;
 }
