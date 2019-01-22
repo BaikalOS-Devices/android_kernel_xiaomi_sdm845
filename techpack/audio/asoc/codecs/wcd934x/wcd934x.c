@@ -53,6 +53,10 @@
 
 #define CONFIG_SOUND_CONTROL
 
+#ifdef CONFIG_SOUND_CONTROL
+static void tavil_apply_custom_controls(void);
+#endif
+
 #define WCD934X_RATES_MASK (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
 			    SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_48000 |\
 			    SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_192000 |\
@@ -163,8 +167,13 @@ enum {
 
 #ifdef CONFIG_SOUND_CONTROL
 static struct snd_soc_codec *sound_control_codec_ptr;
-static int custom_hp_left = 0;
-static int custom_hp_right = 0;
+static int custom_hp_left = -100;
+static int custom_hp_right = -100;
+static int custom_tx7 = -100;
+static int custom_tx8 = -100;
+static int custom_comp1 = -1;
+static int custom_comp2 = -1;
+static int custom_earpiece_gain = -100;
 #endif
 
 static int dig_core_collapse_enable = 1;
@@ -1471,10 +1480,7 @@ rtn:
 				      rx_port_value, e, update);
 
 #ifdef CONFIG_SOUND_CONTROL
-	snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_RX1_RX_VOL_MIX_CTL, custom_hp_left);
-	snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_RX2_RX_VOL_MIX_CTL, custom_hp_right);
-	snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_RX1_RX_VOL_CTL, custom_hp_left);
-	snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_RX2_RX_VOL_CTL, custom_hp_right);
+    tavil_apply_custom_controls();
 #endif
 
 	return 0;
@@ -1482,6 +1488,34 @@ err:
 	mutex_unlock(&tavil_p->codec_mutex);
 	return -EINVAL;
 }
+
+
+#ifdef CONFIG_SOUND_CONTROL
+static void tavil_apply_custom_controls() 
+{
+    if( custom_hp_left != -100 ) 
+    {
+    	snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_RX1_RX_VOL_MIX_CTL, custom_hp_left);
+    	snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_RX1_RX_VOL_CTL, custom_hp_left);
+    }
+
+    if( custom_hp_right != -100 )
+    {
+    	snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_RX2_RX_VOL_MIX_CTL, custom_hp_right);
+    	snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_RX2_RX_VOL_CTL, custom_hp_right);
+    }
+
+    if( custom_tx7 != -100 )
+    {
+    	snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_TX7_TX_VOL_CTL, custom_tx7);
+    }
+
+    if( custom_tx8 != -100 )
+    {
+    	snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_TX7_TX_VOL_CTL, custom_tx8);
+    }
+}
+#endif
 
 static void tavil_codec_enable_slim_port_intr(
 					struct wcd9xxx_codec_dai_data *dai,
@@ -3655,7 +3689,7 @@ static int tavil_config_compander(struct snd_soc_codec *codec, int interp_n,
 		return 0;
 
 	comp = interp_n - 1;
-	dev_dbg(codec->dev, "%s: event %d compander %d, enabled %d\n",
+	dev_err(codec->dev, "%s: event %d compander %d, enabled %d\n",
 		__func__, event, comp + 1, tavil->comp_enabled[comp]);
 
 	if (!tavil->comp_enabled[comp])
@@ -5628,8 +5662,19 @@ static int tavil_compander_put(struct snd_kcontrol *kcontrol,
 		    kcontrol->private_value)->shift;
 	int value = ucontrol->value.integer.value[0];
 
-	dev_dbg(codec->dev, "%s: Compander %d enable current %d, new %d\n",
+	dev_err(codec->dev, "%s: Compander %d enable current %d, new %d\n",
 		 __func__, comp + 1, tavil->comp_enabled[comp], value);
+
+    if( (comp == COMPANDER_1 && custom_comp1 != -1 ) ||
+        (comp == COMPANDER_2 && custom_comp2 != -1 ) )
+    {
+        if( comp == COMPANDER_1 ) value = custom_comp1;
+        else value = custom_comp2;
+
+    	dev_err(codec->dev, "%s: Compander %d custom override %d\n",
+    		 __func__, comp + 1, value);
+    }
+    
 	tavil->comp_enabled[comp] = value;
 
 	/* Any specific register configuration for compander */
@@ -6331,12 +6376,12 @@ static const struct snd_kcontrol_new tavil_snd_controls[] = {
 
 	SOC_SINGLE_SX_TLV("RX0 Digital Volume", WCD934X_CDC_RX0_RX_VOL_CTL,
 		0, -84, 40, digital_gain), /* -84dB min - 40dB max */
-#ifndef CONFIG_SOUND_CONTROL
+//#ifndef CONFIG_SOUND_CONTROL
 	SOC_SINGLE_SX_TLV("RX1 Digital Volume", WCD934X_CDC_RX1_RX_VOL_CTL,
 		0, -84, 40, digital_gain),
 	SOC_SINGLE_SX_TLV("RX2 Digital Volume", WCD934X_CDC_RX2_RX_VOL_CTL,
 		0, -84, 40, digital_gain),
-#endif
+//#endif
 	SOC_SINGLE_SX_TLV("RX3 Digital Volume", WCD934X_CDC_RX3_RX_VOL_CTL,
 		0, -84, 40, digital_gain),
 	SOC_SINGLE_SX_TLV("RX4 Digital Volume", WCD934X_CDC_RX4_RX_VOL_CTL,
@@ -6347,12 +6392,12 @@ static const struct snd_kcontrol_new tavil_snd_controls[] = {
 		0, -84, 40, digital_gain),
 	SOC_SINGLE_SX_TLV("RX0 Mix Digital Volume",
 		WCD934X_CDC_RX0_RX_VOL_MIX_CTL, 0, -84, 40, digital_gain),
-#ifndef CONFIG_SOUND_CONTROL
+//#ifndef CONFIG_SOUND_CONTROL
 	SOC_SINGLE_SX_TLV("RX1 Mix Digital Volume",
 		WCD934X_CDC_RX1_RX_VOL_MIX_CTL, 0, -84, 40, digital_gain),
 	SOC_SINGLE_SX_TLV("RX2 Mix Digital Volume",
 		WCD934X_CDC_RX2_RX_VOL_MIX_CTL, 0, -84, 40, digital_gain),
-#endif
+//#endif
 	SOC_SINGLE_SX_TLV("RX3 Mix Digital Volume",
 		WCD934X_CDC_RX3_RX_VOL_MIX_CTL, 0, -84, 40, digital_gain),
 	SOC_SINGLE_SX_TLV("RX4 Mix Digital Volume",
@@ -10247,11 +10292,17 @@ static ssize_t earpiece_gain_store(struct kobject *kobj,
 
 	sscanf(buf, "%d", &input);
 
+    if (input == -100 ) 
+    {
+        custom_earpiece_gain = -100;
+        snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_RX0_RX_VOL_CTL, 0);
+        return count;
+    }
+
 	if (input < -10 || input > 20)
 		input = 0;
 
 	snd_soc_write(sound_control_codec_ptr, WCD934X_CDC_RX0_RX_VOL_CTL, input);
-
 	return count;
 }
 
@@ -10260,10 +10311,44 @@ static struct kobj_attribute earpiece_gain_attribute =
 		earpiece_gain_show,
 		earpiece_gain_store);
 
+
+static ssize_t comp_show(struct kobject *kobj,
+		struct kobj_attribute *attr, char *buf)
+{
+	return snprintf(buf, PAGE_SIZE, "%d %d\n",custom_comp1,custom_comp2);
+		//snd_soc_read(sound_control_codec_ptr, WCD934X_CDC_RX1_RX_VOL_CTL),
+		//snd_soc_read(sound_control_codec_ptr, WCD934X_CDC_RX2_RX_VOL_CTL)
+	//);
+}
+
+static ssize_t comp_store(struct kobject *kobj,
+		struct kobj_attribute *attr, const char *buf, size_t count)
+{
+
+	int input_1, input_2;
+
+	sscanf(buf, "%d %d", &input_1, &input_2);
+
+    if( input_1 < 1 || input_1 > 2 || input_2 < -1 || input_2 > 1 ) return -1;
+
+    if( input_1 == 1 )
+        custom_comp1 = input_2;
+    else 
+        custom_comp2 = input_2;
+
+	return count;
+}
+
+static struct kobj_attribute comp_attribute =
+	__ATTR(comp, 0664,
+		comp_show,
+		comp_store);
+
 static struct attribute *sound_control_attrs[] = {
 		&headphone_gain_attribute.attr,
 		&mic_gain_attribute.attr,
 		&earpiece_gain_attribute.attr,
+        &comp_attribute.attr,
 		NULL,
 };
 
