@@ -43,7 +43,7 @@ make -j$(nproc --all) O=out \
                       ARCH=arm64 \
                       CC="/home/$USER/toolchain/dtc/out/8.0/bin/clang" \
                       CLANG_TRIPLE=aarch64-linux-gnu- \
-                      CROSS_COMPILE="/home/$USER/toolchain/gcc-linaro-7.3.1/bin/aarch64-linux-gnu-"
+                      CROSS_COMPILE="/home/$USER/toolchain/gcc-linaro-7.4.1/bin/aarch64-linux-gnu-"
 time=$(date +"%d-%m-%y-%T")
 date=$(date +"%d-%m-%y")
 
