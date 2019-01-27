@@ -39,6 +39,9 @@ make O=out ARCH=arm64 shadow_defconfig
 
 export KBUILD_BUILD_HOST="gcp"
 export KBUILD_BUILD_USER="energyspear17"
+export USE_CCACHE=1
+export CCACHE_DIR=~/.ccache
+ccache -M 50G
 make -j$(nproc --all) O=out \
                       ARCH=arm64 \
                       CC="/home/$USER/toolchain/dtc/out/8.0/bin/clang" \
