@@ -54,6 +54,8 @@ echo -e "$red << Failed to compile zImage, fix the errors first >>$white"
 else
 cd $KERNEL_DIR/build/
 rm *.zip > /dev/null 2>&1
+rm -rf kernel
+mkdir kernel
 echo -e "$yellow\n Build successful, generating flashable zip now \n $white"
 End=$(date +"%s")
 Diff=$(($End - $Start))
