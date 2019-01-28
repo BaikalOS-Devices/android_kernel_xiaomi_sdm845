@@ -29,14 +29,12 @@ write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "pixutil"
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "pixutil"
 write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1766400
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 2803200
-write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 300000
+write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 576000
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 825600
 write /sys/module/cpu_boost/parameters/input_boost_freq "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
 write /sys/module/cpu_boost/parameters/input_boost_ms 300
 write /sys/module/cpu_boost/parameters/dynamic_stune_boost 5
 write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz
-write /sys/block/sda/queue/scheduler maple
-write /sys/block/sdf/queue/scheduler maple
 write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 0
 write /sys/module/adreno_idler/parameters/adreno_idler_active N
 write /proc/sys/vm/swappiness 40
@@ -44,8 +42,26 @@ write /proc/sys/vm/vfs_cache_pressure 100
 write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1
 write /sys/module/sync/parameters/fsync_enabled 1
 
-write /sys/block/sda/queue/read_ahead_kb 256
-write /sys/block/sdf/queue/read_ahead_kb 256
+# Set the default IRQ affinity to the silver cluster.
+write /proc/irq/default_smp_affinity f
+
+# Runtime fs tuning: as we have init boottime setting and kernel patch setting
+# default readahead to 2048KB. We should adjust the setting upon boot_complete
+# for runtime performance
+write /sys/block/sda/queue/read_ahead_kb 128
+write /sys/block/sda/queue/nr_requests 128
+write /sys/block/sda/queue/iostats 1
+write /sys/block/sda/queue/scheduler bfq
+
+write /sys/block/sde/queue/read_ahead_kb 128
+write /sys/block/sde/queue/nr_requests 128
+write /sys/block/sde/queue/iostats 1
+write /sys/block/sde/queue/scheduler bfq
+
+write /sys/block/dm-0/queue/read_ahead_kb 128
+write /sys/block/dm-0/queue/nr_requests 128
+write /sys/block/dm-0/queue/iostats 1
+write /sys/block/dm-0/queue/scheduler bfq
 
 sleep 20;
 
