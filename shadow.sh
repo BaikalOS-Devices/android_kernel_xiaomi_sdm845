@@ -39,6 +39,9 @@ make O=out ARCH=arm64 shadow_defconfig
 
 export KBUILD_BUILD_HOST="gcp"
 export KBUILD_BUILD_USER="energyspear17"
+export USE_CCACHE=1
+export CCACHE_DIR=~/.ccache
+ccache -M 50G
 make -j$(nproc --all) O=out \
                       ARCH=arm64 \
                       CC="/home/$USER/toolchain/dtc/out/8.0/bin/clang" \
@@ -54,6 +57,8 @@ echo -e "$red << Failed to compile zImage, fix the errors first >>$white"
 else
 cd $KERNEL_DIR/build/
 rm *.zip > /dev/null 2>&1
+rm -rf kernel
+mkdir kernel
 echo -e "$yellow\n Build successful, generating flashable zip now \n $white"
 End=$(date +"%s")
 Diff=$(($End - $Start))
