@@ -20,13 +20,12 @@ on property:persist.spectrum.profile=0
     write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 825600
     write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 0
     write /sys/module/cpu_boost/parameters/input_boost_freq "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
-    write /sys/module/cpu_boost/parameters/input_boost_ms 300
-    write /sys/module/cpu_boost/parameters/dynamic_stune_boost 5
+    write /sys/module/cpu_boost/parameters/input_boost_ms 64
+    write /sys/module/cpu_boost/parameters/dynamic_stune_boost 0
     write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz
     write /sys/block/sda/queue/scheduler bfq
     write /sys/block/sdf/queue/scheduler bfq
     write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 0
-    write /sys/module/adreno_idler/parameters/adreno_idler_active N
     write /proc/sys/vm/swappiness 40
     write /proc/sys/vm/vfs_cache_pressure 100
     write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1
@@ -42,10 +41,9 @@ on property:persist.spectrum.profile=1
     write /sys/module/cpu_boost/parameters/input_boost_ms 500
     write /sys/module/cpu_boost/parameters/dynamic_stune_boost 10
     write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz
-    write /sys/block/sda/queue/scheduler fiops
-    write /sys/block/sdf/queue/scheduler fiops
+    write /sys/block/sda/queue/scheduler bfq
+    write /sys/block/sdf/queue/scheduler bfq
     write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 1
-    write /sys/module/adreno_idler/parameters/adreno_idler_active N
     write /proc/sys/vm/swappiness 60
     write /proc/sys/vm/vfs_cache_pressure 100
     write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 0
@@ -61,10 +59,9 @@ on property:persist.spectrum.profile=2
     write /sys/module/cpu_boost/parameters/input_boost_ms 30
     write /sys/module/cpu_boost/parameters/dynamic_stune_boost 0
     write /sys/class/kgsl/kgsl-3d0/devfreq/governor powersave
-    write /sys/block/sda/queue/scheduler zen
-    write /sys/block/sdf/queue/scheduler zen
+    write /sys/block/sda/queue/scheduler bfq
+    write /sys/block/sdf/queue/scheduler bfq
     write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 0
-    write /sys/module/adreno_idler/parameters/adreno_idler_active Y
     write /proc/sys/vm/swappiness 20
     write /proc/sys/vm/vfs_cache_pressure 40
     write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1
@@ -83,7 +80,6 @@ on property:persist.spectrum.profile=3
     write /sys/block/sda/queue/scheduler tripndroid
     write /sys/block/sdf/queue/scheduler tripndroid
     write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 0
-    write /sys/module/adreno_idler/parameters/adreno_idler_active N
     write /proc/sys/vm/swappiness 60
     write /proc/sys/vm/vfs_cache_pressure 100
     write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 0
