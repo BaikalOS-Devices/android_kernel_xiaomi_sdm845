@@ -81,6 +81,15 @@ ui_print "AnyKernel2 by osm0sis @ xda-developers";
 ui_print " ";
 ui_print " ";
 
+# Add Shadow ASCII Art
+ui_print "   _____ __              __             ";
+ui_print "  / ___// /_  ____ _____/ /___ _      __";
+ui_print "  \__ \/ __ \/ __ \`/ __  / __ \ | /| / /";
+ui_print " ___/ / / / / /_/ / /_/ / /_/ / |/ |/ / ";
+ui_print "/____/_/ /_/\__,_/\__,_/\____/|__/|__/  ";
+ui_print " ";
+ui_print " ";
+
 unmount_all;
 if [ ! "$(is_mounted /system)" ]; then
   $bb mount -o ro -t auto /system;
