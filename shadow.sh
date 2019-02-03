@@ -46,7 +46,7 @@ export CCACHE_DIR=~/.ccache
 ccache -M 50G
 make -j$(nproc --all) O=out \
                       ARCH=arm64 \
-                      CC="/home/$USER/toolchain/dtc/out/8.0/bin/clang" \
+                      CC="/home/$USER/toolchain/dtc/out/9.0/bin/clang" \
                       CLANG_TRIPLE=aarch64-linux-gnu- \
                       CROSS_COMPILE="/home/$USER/toolchain/gcc-linaro-7.4.1/bin/aarch64-linux-gnu-"
 time=$(date +"%d-%m-%y-%T")
