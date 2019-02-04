@@ -29,7 +29,7 @@ write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor "pixutil"
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor "pixutil"
 write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1766400
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 2803200
-write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 576000
+write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 300000
 write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 825600
 write /sys/module/cpu_boost/parameters/input_boost_freq "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
 write /sys/module/cpu_boost/parameters/input_boost_ms 64
@@ -61,6 +61,11 @@ write /sys/block/dm-0/queue/read_ahead_kb 128
 write /sys/block/dm-0/queue/nr_requests 128
 write /sys/block/dm-0/queue/iostats 1
 write /sys/block/dm-0/queue/scheduler bfq
+
+write /sys/block/mmcblk0/queue/read_ahead_kb 128
+write /sys/block/mmcblk0/queue/nr_requests 128
+write /sys/block/mmcblk0/queue/iostats 1
+write /sys/block/mmcblk0/queue/scheduler bfq
 
 sleep 20;
 
