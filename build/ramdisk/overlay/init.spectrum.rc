@@ -30,6 +30,7 @@ on property:persist.spectrum.profile=0
     write /proc/sys/vm/swappiness 40
     write /proc/sys/vm/vfs_cache_pressure 100
     write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1
+    write /sys/class/thermal/thermal_message/sconfig 0
 
 # Performance (based on DrunkSauce Lite)
 on property:persist.spectrum.profile=1
@@ -49,11 +50,12 @@ on property:persist.spectrum.profile=1
     write /proc/sys/vm/swappiness 60
     write /proc/sys/vm/vfs_cache_pressure 100
     write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 0
+    write /sys/class/thermal/thermal_message/sconfig 10
 
 # Battery
 on property:persist.spectrum.profile=2
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1516800
-    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 1056000
+    write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 1536000
     write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 300000
     write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 825600
     write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 0
@@ -68,6 +70,7 @@ on property:persist.spectrum.profile=2
     write /proc/sys/vm/swappiness 20
     write /proc/sys/vm/vfs_cache_pressure 40
     write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1
+    write /sys/class/thermal/thermal_message/sconfig 2
 
 # Gaming
 on property:persist.spectrum.profile=3
@@ -87,3 +90,4 @@ on property:persist.spectrum.profile=3
     write /proc/sys/vm/swappiness 60
     write /proc/sys/vm/vfs_cache_pressure 100
     write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 0
+    write /sys/class/thermal/thermal_message/sconfig 10

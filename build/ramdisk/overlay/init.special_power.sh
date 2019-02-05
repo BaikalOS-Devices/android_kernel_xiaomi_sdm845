@@ -41,6 +41,8 @@ write /proc/sys/vm/vfs_cache_pressure 100
 write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1
 write /sys/module/sync/parameters/fsync_enabled 1
 
+# Set Thermal sconfig
+write /sys/class/thermal/thermal_message/sconfig 0
 # Set the default IRQ affinity to the silver cluster.
 write /proc/irq/default_smp_affinity f
 
