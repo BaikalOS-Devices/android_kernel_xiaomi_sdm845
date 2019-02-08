@@ -62,6 +62,7 @@ static DEFINE_SPINLOCK(suspend_lock);
 static unsigned int adrenoboost = 0;
 #endif
 
+
 static u64 suspend_time;
 static u64 suspend_start;
 static unsigned long acc_total, acc_relative_busy;
@@ -377,18 +378,6 @@ static int tz_init(struct devfreq_msm_adreno_tz_data *priv,
 	return ret;
 }
 
-static inline int devfreq_get_freq_level(struct devfreq *devfreq,
-	unsigned long freq)
-{
-	int lev;
-
-	for (lev = 0; lev < devfreq->profile->max_state; lev++)
-	if (freq == devfreq->profile->freq_table[lev])
-		return lev;
-
-	return -EINVAL;
-}
-
 #if 1
 
 // mapping gpu level calculated linear conservation half curve values into a
@@ -407,12 +396,22 @@ static int lvl_divider_map_2[] = {10,10,10,1,1,1,1    ,1,1};
 // for boost == 3 -- boost divide on the low spectrum, dampen the lower freq values, unneeded to boost the low freq spectrum so much at start
 static int lvl_multiplicator_map_3[] = {9,1,1,1,1,10,8    ,1,1};
 static int lvl_divider_map_3[] = {10,1,1,1,1,14,12    ,1,1};
+
 #endif
 
-#ifdef CONFIG_ADRENO_IDLER
-extern int adreno_idler(struct devfreq_dev_status stats, struct devfreq *devfreq,
-		 unsigned long *freq);
-#endif
+static int uci_adrenoboost = 1;
+
+static inline int devfreq_get_freq_level(struct devfreq *devfreq,
+	unsigned long freq)
+{
+	int lev;
+
+	for (lev = 0; lev < devfreq->profile->max_state; lev++)
+	if (freq == devfreq->profile->freq_table[lev])
+		return lev;
+
+	return -EINVAL;
+}
 
 static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq, u32 *flag)
 {
@@ -426,7 +425,7 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq, u32 
 	int last_level = priv->bin.last_level;
 //	int max_state_val = devfreq->profile->max_state - 1;
 #endif
-
+	int loc_adrenoboost = uci_adrenoboost;
 	/* keeps stats.private_data == NULL   */
 	result = devfreq->profile->get_dev_status(devfreq->dev.parent, &stats);
 	if (result) {
@@ -434,33 +433,19 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq, u32 
 		return result;
 	}
 
-	/* Prevent overflow */
-	if (stats.busy_time >= (1 << 24) || stats.total_time >= (1 << 24)) {
-		stats.busy_time >>= 7;
-		stats.total_time >>= 7;
-	}
-
 	*freq = stats.current_frequency;
-
-#ifdef CONFIG_ADRENO_IDLER
-	if (adreno_idler(stats, devfreq, freq)) {
-		/* adreno_idler has asked to bail out now */
-		return 0;
-	}
-#endif
-
 	priv->bin.total_time += stats.total_time;
 #if 1
 	// scale busy time up based on adrenoboost parameter, only if MIN_BUSY exceeded...
 //	if ((unsigned int)(priv->bin.busy_time + stats.busy_time) >= MIN_BUSY && adrenoboost) {
-	if (adrenoboost) {
-		if (adrenoboost == 1) {
-			priv->bin.busy_time += (unsigned int)((stats.busy_time * ( 1 + adrenoboost ) * lvl_multiplicator_map_1[ last_level ]) / lvl_divider_map_1[ last_level ]);
+	if (loc_adrenoboost) {
+		if (loc_adrenoboost == 1) {
+			priv->bin.busy_time += (unsigned int)((stats.busy_time * ( 1 + loc_adrenoboost ) * lvl_multiplicator_map_1[ last_level ]) / lvl_divider_map_1[ last_level ]);
 		} else
-		if (adrenoboost == 2) {
-			priv->bin.busy_time += (unsigned int)((stats.busy_time * ( 1 + adrenoboost ) * lvl_multiplicator_map_2[ last_level ]  * 7 ) / (lvl_divider_map_2[ last_level ] * 10));
+		if (loc_adrenoboost == 2) {
+			priv->bin.busy_time += (unsigned int)((stats.busy_time * ( 1 + loc_adrenoboost ) * lvl_multiplicator_map_2[ last_level ]  * 7 ) / (lvl_divider_map_2[ last_level ] * 10));
 		} else {
-			priv->bin.busy_time += (unsigned int)((stats.busy_time * ( 1 + adrenoboost ) * lvl_multiplicator_map_3[ last_level ]  * 8 ) / (lvl_divider_map_3[ last_level ] * 10));
+			priv->bin.busy_time += (unsigned int)((stats.busy_time * ( 1 + loc_adrenoboost ) * lvl_multiplicator_map_3[ last_level ]  * 8 ) / (lvl_divider_map_3[ last_level ] * 10));
 		}
 	} else {
 		priv->bin.busy_time += stats.busy_time;
@@ -491,7 +476,6 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq, u32 
 		pr_err(TAG "bad freq %ld\n", stats.current_frequency);
 		return level;
 	}
-
 	// idle freq or any non governor drop should move last_level as well, so adrenoboost works on proper leveling
 	if (level != priv->bin.last_level) {
 		priv->bin.last_level = level;
@@ -523,7 +507,7 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq, u32 
 	 * frequency changes.
 	 */
 #if 1
-	if (!adrenoboost && val) {
+	if (!loc_adrenoboost && val) {
 		level += val;
 		level = max(level, 0);
 		level = min_t(int, level, devfreq->profile->max_state - 1);

@@ -3,6 +3,8 @@
 #
 # Copyright 2016 Umang Leekha (Umang96@xda)
 #
+# Copyright (modifications)  2019 Shadow Of Mordor (energyspear17@xda)
+#
 # This software is licensed under the terms of the GNU General Public
 # License version 2, as published by the Free Software Foundation, and
 # may be copied, distributed, and modified under those terms.
@@ -21,7 +23,7 @@ white='\033[0m'
 red='\033[0;31m'
 gre='\e[0;32m'
 echo -e ""
-echo -e "$gre ====================================\n\n Welcome to Shadow building program !\n\n ===================================="
+echo -e "$yellow \n\n███████╗██╗  ██╗ █████╗ ██████╗  ██████╗ ██╗    ██╗\n██╔════╝██║  ██║██╔══██╗██╔══██╗██╔═══██╗██║    ██║\n███████╗███████║███████║██║  ██║██║   ██║██║ █╗ ██║\n╚════██║██╔══██║██╔══██║██║  ██║██║   ██║██║███╗██║\n███████║██║  ██║██║  ██║██████╔╝╚██████╔╝╚███╔███╔╝\n╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝  ╚═════╝  ╚══╝╚══╝ \n\n  "
 echo -e "$gre \n 1.Build Shadow\n\n 2.Make Menu Config\n\n 3.Clean Source\n\n 4.Exit\n"
 echo -n " Enter your choice:"
 read qc
@@ -44,7 +46,7 @@ export CCACHE_DIR=~/.ccache
 ccache -M 50G
 make -j$(nproc --all) O=out \
                       ARCH=arm64 \
-                      CC="/home/$USER/toolchain/dtc/out/8.0/bin/clang" \
+                      CC="/home/$USER/toolchain/dtc/out/9.0/bin/clang" \
                       CLANG_TRIPLE=aarch64-linux-gnu- \
                       CROSS_COMPILE="/home/$USER/toolchain/gcc-linaro-7.4.1/bin/aarch64-linux-gnu-"
 time=$(date +"%d-%m-%y-%T")
