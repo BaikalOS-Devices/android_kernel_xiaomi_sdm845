@@ -1625,8 +1625,8 @@ static int msm_pm_suspend(struct device *dev)
 	priv = ddev->dev_private;
 	kms = priv->kms;
 
-	if (kms && kms->funcs && kms->funcs->pm_suspend)
-		return kms->funcs->pm_suspend(dev);
+	//if (kms && kms->funcs && kms->funcs->pm_suspend)
+	//	return kms->funcs->pm_suspend(dev);
 
 	/* disable hot-plug polling */
 	drm_kms_helper_poll_disable(ddev);
@@ -1650,8 +1650,8 @@ static int msm_pm_resume(struct device *dev)
 	priv = ddev->dev_private;
 	kms = priv->kms;
 
-	if (kms && kms->funcs && kms->funcs->pm_resume)
-		return kms->funcs->pm_resume(dev);
+	//if (kms && kms->funcs && kms->funcs->pm_resume)
+	//	return kms->funcs->pm_resume(dev);
 
 	/* enable hot-plug polling */
 	drm_kms_helper_poll_enable(ddev);
