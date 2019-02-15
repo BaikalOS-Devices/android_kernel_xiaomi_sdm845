@@ -127,7 +127,7 @@ cd ${KERNEL_DIR}/build/dtbs/
 rm modules.order
 cp ${KERNEL_DIR}/out/arch/arm64/boot/Image.gz ${KERNEL_DIR}/build/kernel/
 cd ${KERNEL_DIR}/build/
-v=$(grep "CONFIG_LOCALVERSION=" ${KERNEL_DIR}/${KERNEL_defconfig} | cut -d- -f3- | cut -c -3)
+v=$(grep "CONFIG_LOCALVERSION=" "${KERNEL_DIR}/arch/arm64/configs/${KERNEL}_defconfig" | cut -d- -f3- | cut -c -3)
 zip -r $KERNEL-$DEVICE-$VERSION-v$v-$date.zip * > /dev/null
 if [ "$1" = "y" ]; then
     if [ -f "/usr/local/bin/gdrive" ]; then
