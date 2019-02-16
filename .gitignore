@@ -121,3 +121,5 @@ kernel/configs/android-*.cfg
 
 /out
 buildlog.txt
+ch.txt
+impvar
