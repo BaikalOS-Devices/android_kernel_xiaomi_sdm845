@@ -31,7 +31,7 @@ chown -R root:root $ramdisk/*;
 dump_boot;
 
 # Begin Ramdisk Changes
-
+. /tmp/anykernel/tools/editramdisk.sh
 
 # If the kernel image and dtbs are separated in the zip
 decompressed_image=/tmp/anykernel/kernel/Image

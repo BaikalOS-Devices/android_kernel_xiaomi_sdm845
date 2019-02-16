@@ -8,15 +8,16 @@ on property:fku.perf.profile=0
     write /sys/module/cpu_boost/parameters/input_boost_freq "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
     write /sys/module/cpu_boost/parameters/input_boost_ms 30
     write /sys/module/cpu_boost/parameters/dynamic_stune_boost 0
-    write /sys/class/kgsl/kgsl-3d0/devfreq/governor powersave
+    write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz
     write /sys/block/sda/queue/scheduler bfq
     write /sys/block/sdf/queue/scheduler bfq
     write /sys/block/mmcblk0/queue/scheduler bfq
     write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 0
+    write /sys/class/kgsl/kgsl-3d0/max_gpuclk 596000000
     write /proc/sys/vm/swappiness 20
     write /proc/sys/vm/vfs_cache_pressure 40
     write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1
-    write /sys/class/thermal/thermal_message/sconfig 2
+    write /sys/class/thermal/thermal_message/sconfig 11
 
 # Balance (FK defaults)
 on property:fku.perf.profile=1
@@ -33,10 +34,11 @@ on property:fku.perf.profile=1
     write /sys/block/sdf/queue/scheduler bfq
     write /sys/block/mmcblk0/queue/scheduler bfq
     write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 0
+    write /sys/class/kgsl/kgsl-3d0/max_gpuclk 710000000
     write /proc/sys/vm/swappiness 40
     write /proc/sys/vm/vfs_cache_pressure 100
     write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1
-    write /sys/class/thermal/thermal_message/sconfig 0
+    write /sys/class/thermal/thermal_message/sconfig 10
 
 # Performance
 on property:fku.perf.profile=2
@@ -46,13 +48,14 @@ on property:fku.perf.profile=2
     write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 825600
     write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 2
     write /sys/module/cpu_boost/parameters/input_boost_freq "0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0"
-    write /sys/module/cpu_boost/parameters/input_boost_ms 500
-    write /sys/module/cpu_boost/parameters/dynamic_stune_boost 10
+    write /sys/module/cpu_boost/parameters/input_boost_ms 250
+    write /sys/module/cpu_boost/parameters/dynamic_stune_boost 5
     write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz
     write /sys/block/sda/queue/scheduler bfq
     write /sys/block/sdf/queue/scheduler bfq
     write /sys/block/mmcblk0/queue/scheduler bfq
     write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 1
+    write /sys/class/kgsl/kgsl-3d0/max_gpuclk 710000000
     write /proc/sys/vm/swappiness 60
     write /proc/sys/vm/vfs_cache_pressure 100
     write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 0
