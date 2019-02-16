@@ -121,10 +121,8 @@ rm *.zip > /dev/null 2>&1
 rm -rf kernel
 mkdir kernel
 rm -rf dtbs
-mv ${KERNEL_DIR}/out/arch/arm64/boot/dts/qcom/ ${KERNEL_DIR}/build/
-mv ${KERNEL_DIR}/build/qcom ${KERNEL_DIR}/build/dtbs
-cd ${KERNEL_DIR}/build/dtbs/
-rm modules.order
+mkdir dtbs
+mv ${KERNEL_DIR}/out/arch/arm64/boot/dts/qcom/*.dtb ${KERNEL_DIR}/build/dtbs/
 cp ${KERNEL_DIR}/out/arch/arm64/boot/Image.gz ${KERNEL_DIR}/build/kernel/
 cd ${KERNEL_DIR}/build/
 v=$(grep "CONFIG_LOCALVERSION=" "${KERNEL_DIR}/arch/arm64/configs/${KERNEL}_defconfig" | cut -d- -f3- | cut -c -3)
@@ -147,6 +145,7 @@ if [ "$1" = "y" ]; then
     fi
 
 fi
+cd ${KERNEL_DIR}
 }
 
 function main() {
