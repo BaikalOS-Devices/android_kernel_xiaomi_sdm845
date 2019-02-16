@@ -35,6 +35,8 @@ zimage="${KERNEL_DIR}/out/arch/arm64/boot/Image"
 time=$(date +"%d-%m-%y-%T")
 date=$(date +"%d-%m-%y")
 build_type="gcc"
+v=$(grep "CONFIG_LOCALVERSION=" "${KERNEL_DIR}/arch/arm64/configs/${KERNEL}_defconfig" | cut -d- -f3- | cut -c -3)
+zip_name="${KERNEL}-${DEVICE}-${VERSION}-v${v}-${date}.zip"
 
 function build() {
 
@@ -122,14 +124,32 @@ rm -rf kernel
 mkdir kernel
 rm -rf dtbs
 mkdir dtbs
-mv ${KERNEL_DIR}/out/arch/arm64/boot/dts/qcom/*.dtb ${KERNEL_DIR}/build/dtbs/
+cp ${KERNEL_DIR}/out/arch/arm64/boot/dts/qcom/*.dtb ${KERNEL_DIR}/build/dtbs/
 cp ${KERNEL_DIR}/out/arch/arm64/boot/Image.gz ${KERNEL_DIR}/build/kernel/
 cd ${KERNEL_DIR}/build/
-v=$(grep "CONFIG_LOCALVERSION=" "${KERNEL_DIR}/arch/arm64/configs/${KERNEL}_defconfig" | cut -d- -f3- | cut -c -3)
-zip -r $KERNEL-$DEVICE-$VERSION-v$v-$date.zip * > /dev/null
-if [ "$1" = "y" ]; then
+zip -r ${zip_name} * > /dev/null
+
+    case $1 in
+        g)
+	    gdupload
+            ;;
+        t)
+	    tgram
+            ;;
+        tg)
+	    gdupload
+	    tgram
+            ;;
+        *)
+           exit 1
+    esac
+cd ${KERNEL_DIR}
+}
+
+function gdupload(){
+
     if [ -f "/usr/local/bin/gdrive" ]; then
-        gdrive upload $KERNEL-$DEVICE-$VERSION-v$v-$date.zip
+        gdrive upload ${zip_name}
     else
         echo -e "$yellow\n GDrive not found installing...\n $white"
         wget "https://drive.google.com/uc?id=10NAVLG-cNSPcPC-g3E-RfMgFksxJnyZu&export=download"
@@ -144,8 +164,31 @@ if [ "$1" = "y" ]; then
         fi
     fi
 
-fi
-cd ${KERNEL_DIR}
+}
+
+function tgram(){
+
+   if [ -f "${KERNEL_DIR}/impvar" ]; then
+
+	source ${KERNEL_DIR}/impvar
+
+	echo -e "$yellow\n Sending Files to Telegram Channel...\n $white"
+
+	curl -F chat_id="${TCHANNEL}" -F document=@"${zip_name}" https://api.telegram.org/bot${BOT_API}/sendDocument 1> /dev/null
+
+	curl -s -X POST https://api.telegram.org/bot$BOT_API/sendMessage -d text="$(cat ${KERNEL_DIR}/ch.txt)" -d chat_id=${TCHANNEL} 1> /dev/null
+
+	curl -s -X POST https://api.telegram.org/bot${BOT_API}/sendSticker -d chat_id="${TCHANNEL}" -d sticker="CAADBQADAgADMSh7G43ckmaE_h0aAg" 1> /dev/null
+
+	echo -e "$blue\n Sending Files to Telegram Group...\n $white"
+
+	curl -F chat_id="${TGROUP}" -F document=@"${zip_name}" https://api.telegram.org/bot${BOT_API}/sendDocument 1>/dev/null
+
+    	curl -s -X POST https://api.telegram.org/bot$BOT_API/sendMessage -d text="$(cat ${KERNEL_DIR}/ch.txt)" -d chat_id=${TGROUP} 1> /dev/null
+
+    else
+	echo -e "$red << Telegram import variables not found.. >>$white"
+    fi
 }
 
 function main() {
@@ -170,7 +213,7 @@ if [ "$1" = "" ]; then
             build $build_type
             read -r -p "Do you want to make flashable zip ? y/n :" ZIP
             if [ "$ZIP" = "y" ]; then
-                read -r -p "Do you want to Upload to Gdrive ? y/n :" GD
+                read -r -p "Do you want to Upload to Gdrive/Telegram ? g/t/tg/n :" GD
                 makezip $GD
             fi
             ;;
