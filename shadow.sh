@@ -174,17 +174,18 @@ function tgram(){
 
 	echo -e "$yellow\n Sending Files to Telegram Channel...\n $white"
 
-	curl -F chat_id="${TCHANNEL}" -F document=@"${zip_name}" https://api.telegram.org/bot${BOT_API}/sendDocument 1> /dev/null
+	file_id=$(curl -F chat_id="${TCHANNEL}" -F document=@"${zip_name}" https://api.telegram.org/bot${BOT_API}/sendDocument | cut -d: -f4 | cut -d "," -f1)
 
-	curl -s -X POST https://api.telegram.org/bot$BOT_API/sendMessage -d text="$(cat ${KERNEL_DIR}/ch.txt)" -d chat_id=${TCHANNEL} 1> /dev/null
+	ch_id=$(curl -s -X POST https://api.telegram.org/bot${BOT_API}/sendMessage -d text="$(cat ${KERNEL_DIR}/ch.txt)" -d chat_id="${TCHANNEL}" | cut -d: -f4 | cut -d "," -f1)
 
 	curl -s -X POST https://api.telegram.org/bot${BOT_API}/sendSticker -d chat_id="${TCHANNEL}" -d sticker="CAADBQADAgADMSh7G43ckmaE_h0aAg" 1> /dev/null
 
 	echo -e "$blue\n Sending Files to Telegram Group...\n $white"
 
-	curl -F chat_id="${TGROUP}" -F document=@"${zip_name}" https://api.telegram.org/bot${BOT_API}/sendDocument 1>/dev/null
+	curl -s -X POST https://api.telegram.org/bot${BOT_API}/forwardMessage -d chat_id="${TGROUP}" -d from_chat_id="${TCHANNEL}" -d message_id="${file_id}" 1> /dev/null
 
-    	curl -s -X POST https://api.telegram.org/bot$BOT_API/sendMessage -d text="$(cat ${KERNEL_DIR}/ch.txt)" -d chat_id=${TGROUP} 1> /dev/null
+	curl -s -X POST https://api.telegram.org/bot${BOT_API}/forwardMessage -d chat_id="${TGROUP}" -d from_chat_id="${TCHANNEL}" -d message_id="${ch_id}" 1> /dev/null
+
 
     else
 	echo -e "$red << Telegram import variables not found.. >>$white"
