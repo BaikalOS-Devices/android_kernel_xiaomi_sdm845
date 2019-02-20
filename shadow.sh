@@ -35,7 +35,7 @@ zimage="${KERNEL_DIR}/out/arch/arm64/boot/Image"
 time=$(date +"%d-%m-%y-%T")
 date=$(date +"%d-%m-%y")
 build_type="gcc"
-v=$(grep "CONFIG_LOCALVERSION=" "${KERNEL_DIR}/arch/arm64/configs/${KERNEL}_defconfig" | cut -d- -f3- | cut -c -3)
+v=$(grep "CONFIG_LOCALVERSION=" "${KERNEL_DIR}/arch/arm64/configs/${KERNEL}_defconfig" | cut -d- -f3- | cut -d\" -f1)
 zip_name="${KERNEL}-${DEVICE}-${VERSION}-v${v}-${date}.zip"
 
 function build() {
