@@ -1692,9 +1692,22 @@ static __latent_entropy void run_timer_softirq(struct softirq_action *h)
 {
 	struct timer_base *base = this_cpu_ptr(&timer_bases[BASE_STD]);
 
+    if( base == NULL ) {
+			printk(KERN_ERR "run_timer_softirq: base == NULL!");
+			dump_stack();
+            return;
+    }
+
 	__run_timers(base);
-	if (IS_ENABLED(CONFIG_NO_HZ_COMMON))
-		__run_timers(this_cpu_ptr(&timer_bases[BASE_DEF]));
+	if (IS_ENABLED(CONFIG_NO_HZ_COMMON)) {
+        struct timer_base *base_def = this_cpu_ptr(&timer_bases[BASE_DEF]);
+        if( base == NULL ) {
+			printk(KERN_ERR "run_timer_softirq: base_def == NULL!");
+			dump_stack();
+            return;
+        }
+		__run_timers(base_def);
+    }
 
 	if ((atomic_cmpxchg(&deferrable_pending, 1, 0) &&
 		tick_do_timer_cpu == TICK_DO_TIMER_NONE) ||
