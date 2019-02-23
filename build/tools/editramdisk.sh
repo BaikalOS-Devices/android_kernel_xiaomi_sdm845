@@ -11,6 +11,7 @@ PROFILE=$(grep "CONFIG_SHADOW_PROFILE" "$PROPFILE" | cut -d '=' -f2)
 FSYNC=$(grep "CONFIG_SHADOW_FSYNC" "$PROPFILE" | cut -d '=' -f2)
 COLPROF=$(grep "CONFIG_SHADOW_COLPROF" "$PROPFILE" | cut -d '=' -f2)
 USBFC=$(grep "CONFIG_SHADOW_USBFC" "$PROPFILE" | cut -d '=' -f2)
+DT2W=$(grep "CONFIG_SHADOW_DT2W" "$PROPFILE" | cut -d '=' -f2)
 
 else
 
@@ -18,6 +19,7 @@ PROFILE=0
 FSYNC=1
 COLPROF=0
 USBFC=0
+DT2W=0
 
 echo "# Shadow Kernel Properties" >> $PROPFILE
 echo "" >> $PROPFILE
@@ -46,6 +48,12 @@ echo "# USB Fast Charge - When enabled draws 900ma instead of 500ma when connect
 echo "# 0 - Off, 1 - On" >> $PROPFILE
 echo "" >> $PROPFILE
 echo "CONFIG_SHADOW_USBFC=0" >> $PROPFILE
+echo "" >> $PROPFILE
+echo "" >> $PROPFILE
+echo "# Double Tap to Wake - Used to wake device by double tapping on screen" >> $PROPFILE
+echo "# 0 - Off, 1 - On" >> $PROPFILE
+echo "" >> $PROPFILE
+echo "CONFIG_SHADOW_DT2W=0" >> $PROPFILE
 echo "" >> $PROPFILE
 echo "" >> $PROPFILE
 
@@ -203,6 +211,16 @@ if [ $USBFC = 1 ]; then
 echo "write /sys/kernel/fast_charge/force_fast_charge 1" >> $CONFIGFILE
 else
 echo "write /sys/kernel/fast_charge/force_fast_charge 0" >> $CONFIGFILE
+fi
+
+echo "" >> $CONFIGFILE
+echo "" >> $CONFIGFILE
+echo "# Double Tap to Wake" >> $CONFIGFILE
+echo "" >> $CONFIGFILE
+if [ $DT2W = 1 ]; then
+echo "write /proc/touchpanel/wake_gesture 1" >> $CONFIGFILE
+else
+echo "write /proc/touchpanel/wake_gesture 0" >> $CONFIGFILE
 fi
 echo "" >> $CONFIGFILE
 echo "" >> $CONFIGFILE
