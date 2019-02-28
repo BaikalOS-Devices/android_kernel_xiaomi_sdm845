@@ -249,6 +249,13 @@ else
         c)
             clean
             ;;
+        u)
+            if [ "$2" = "" ]; then
+                echo -e "$red << Please Specify telegram or gdrive (t/g/tg)... >>$white"
+                exit 2
+            fi
+	    makezip $2
+	    ;;
         *)
            echo -e "$red << Unknown argument passed... >>$white"
            exit 1
