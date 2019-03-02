@@ -133,7 +133,7 @@ case $PROFILE in
 	echo "# Profile - Balanced" >> $CONFIGFILE
 	echo "" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1766400" >> $CONFIGFILE
-	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 2803200" >> $CONFIGFILE
+	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 2323200" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 300000" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 825600" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 0" >> $CONFIGFILE
