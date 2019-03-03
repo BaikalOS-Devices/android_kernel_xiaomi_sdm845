@@ -1,6 +1,21 @@
 #!/sbin/sh
 
+LD_PATH=/system/lib
+if [ -d /system/lib64 ]; then
+  LD_PATH=/system/lib64
+fi
+
+exec_util() {
+  LD_LIBRARY_PATH=/system/lib64 $UTILS $1
+}
+
+set_con() {
+  exec_util "chcon -h u:object_r:"$1":s0 $2"
+  exec_util "chcon u:object_r:"$1":s0 $2"
+}
+
 CONFIGFILE="/tmp/anykernel/ramdisk/init.shadow.sh"
+POSTBOOTFILE="/tmp/anykernel/ramdisk/init.qcom.post_boot.sh"
 PROPFILE="/sdcard/shadow.prop"
 
 rm $CONFIGFILE
@@ -59,6 +74,242 @@ echo "" >> $PROPFILE
 
 fi
 
+if [ ! -d $ramdisk/.backup ]; then
+echo "#! /vendor/bin/sh" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "# Copyright (c) 2012-2013, 2016-2018, The Linux Foundation. All rights reserved." >> $POSTBOOTFILE
+echo "#" >> $POSTBOOTFILE
+echo "# Redistribution and use in source and binary forms, with or without" >> $POSTBOOTFILE
+echo "# modification, are permitted provided that the following conditions are met:" >> $POSTBOOTFILE
+echo "#     * Redistributions of source code must retain the above copyright" >> $POSTBOOTFILE
+echo "#       notice, this list of conditions and the following disclaimer." >> $POSTBOOTFILE
+echo "#     * Redistributions in binary form must reproduce the above copyright" >> $POSTBOOTFILE
+echo "#       notice, this list of conditions and the following disclaimer in the" >> $POSTBOOTFILE
+echo "#       documentation and/or other materials provided with the distribution." >> $POSTBOOTFILE
+echo "#     * Neither the name of The Linux Foundation nor" >> $POSTBOOTFILE
+echo "#       the names of its contributors may be used to endorse or promote" >> $POSTBOOTFILE
+echo "#       products derived from this software without specific prior written" >> $POSTBOOTFILE
+echo "#       permission." >> $POSTBOOTFILE
+echo "#" >> $POSTBOOTFILE
+echo "# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\"" >> $POSTBOOTFILE
+echo "# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE" >> $POSTBOOTFILE
+echo "# IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND" >> $POSTBOOTFILE
+echo "# NON-INFRINGEMENT ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR" >> $POSTBOOTFILE
+echo "# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL," >> $POSTBOOTFILE
+echo "# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO," >> $POSTBOOTFILE
+echo "# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;" >> $POSTBOOTFILE
+echo "# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY," >> $POSTBOOTFILE
+echo "# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR" >> $POSTBOOTFILE
+echo "# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF" >> $POSTBOOTFILE
+echo "# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE." >> $POSTBOOTFILE
+echo "#" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "function start_hbtp()" >> $POSTBOOTFILE
+echo "{" >> $POSTBOOTFILE
+echo "        # Start the Host based Touch processing but not in the power off mode." >> $POSTBOOTFILE
+echo "        bootmode=\`getprop ro.bootmode\`" >> $POSTBOOTFILE
+echo "        if [ "charger" != $bootmode ]; then" >> $POSTBOOTFILE
+echo "                start vendor.hbtp" >> $POSTBOOTFILE
+echo "        fi" >> $POSTBOOTFILE
+echo "}" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "        # Set the default IRQ affinity to the silver cluster. When a" >> $POSTBOOTFILE
+echo "        # CPU is isolated/hotplugged, the IRQ affinity is adjusted" >> $POSTBOOTFILE
+echo "        # to one of the CPU from the default IRQ affinity mask." >> $POSTBOOTFILE
+echo "        echo f > /proc/irq/default_smp_affinity" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "	start_hbtp" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "	# Core control parameters" >> $POSTBOOTFILE
+echo "	echo 60 > /sys/devices/system/cpu/cpu4/core_ctl/busy_up_thres" >> $POSTBOOTFILE
+echo "	echo 30 > /sys/devices/system/cpu/cpu4/core_ctl/busy_down_thres" >> $POSTBOOTFILE
+echo "	echo 100 > /sys/devices/system/cpu/cpu4/core_ctl/offline_delay_ms" >> $POSTBOOTFILE
+echo "	echo 1 > /sys/devices/system/cpu/cpu4/core_ctl/is_big_cluster" >> $POSTBOOTFILE
+echo "	echo 4 > /sys/devices/system/cpu/cpu4/core_ctl/task_thres" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "	# Setting b.L scheduler parameters" >> $POSTBOOTFILE
+echo "	echo 95 > /proc/sys/kernel/sched_upmigrate" >> $POSTBOOTFILE
+echo "	echo 85 > /proc/sys/kernel/sched_downmigrate" >> $POSTBOOTFILE
+echo "	echo 100 > /proc/sys/kernel/sched_group_upmigrate" >> $POSTBOOTFILE
+echo "	echo 95 > /proc/sys/kernel/sched_group_downmigrate" >> $POSTBOOTFILE
+echo "	echo 1 > /proc/sys/kernel/sched_walt_rotate_big_tasks" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "	# configure governor settings for little cluster" >> $POSTBOOTFILE
+echo "	echo \"pixutil\" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor" >> $POSTBOOTFILE
+echo "	echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/pixutil/rate_limit_us" >> $POSTBOOTFILE
+echo "	echo 1209600 > /sys/devices/system/cpu/cpu0/cpufreq/pixutil/hispeed_freq" >> $POSTBOOTFILE
+echo "	echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/pixutil/pl" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "	# configure governor settings for big cluster" >> $POSTBOOTFILE
+echo "	echo \"pixutil\" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor" >> $POSTBOOTFILE
+echo "	echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/pixutil/rate_limit_us" >> $POSTBOOTFILE
+echo "	echo 1574400 > /sys/devices/system/cpu/cpu4/cpufreq/pixutil/hispeed_freq" >> $POSTBOOTFILE
+echo "	echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/pixutil/pl" >> $POSTBOOTFILE
+echo "	echo \"0:0 1:0 2:0 3:0 4:2323200 5:0 6:0 7:0\" > /sys/module/cpu_boost/parameters/powerkey_input_boost_freq" >> $POSTBOOTFILE
+echo "	echo 400 > /sys/module/cpu_boost/parameters/powerkey_input_boost_ms" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "	# Shadow Changes" >> $POSTBOOTFILE
+case $PROFILE in
+    1)
+	echo "	echo 576000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
+	echo "	echo 825600 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
+	echo "	echo 1766400 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
+	echo "	echo 2803200 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
+	echo "	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus" >> $POSTBOOTFILE
+	echo "	echo \"0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0\" > /sys/module/cpu_boost/parameters/input_boost_freq" >> $POSTBOOTFILE
+	echo "	echo 250 > /sys/module/cpu_boost/parameters/input_boost_ms" >> $POSTBOOTFILE
+	echo "	echo 5 > /sys/module/cpu_boost/parameters/dynamic_stune_boost" >> $POSTBOOTFILE
+	echo "	echo 60 > /proc/sys/vm/swappiness" >> $POSTBOOTFILE
+	echo "	echo 100 > /proc/sys/vm/vfs_cache_pressure" >> $POSTBOOTFILE
+	echo "	echo 0 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk" >> $POSTBOOTFILE
+	echo "	echo 10 > /sys/class/thermal/thermal_message/sconfig" >> $POSTBOOTFILE
+	;;
+    2)
+	echo "	echo 300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
+	echo "	echo 825600 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
+	echo "	echo 1516800 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
+	echo "	echo 1536000 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
+	echo "	echo 0 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus" >> $POSTBOOTFILE
+	echo "	echo \"0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0\" > /sys/module/cpu_boost/parameters/input_boost_freq" >> $POSTBOOTFILE
+	echo "	echo 30 > /sys/module/cpu_boost/parameters/input_boost_ms" >> $POSTBOOTFILE
+	echo "	echo 0 > /sys/module/cpu_boost/parameters/dynamic_stune_boost" >> $POSTBOOTFILE
+	echo "	echo 20 > /proc/sys/vm/swappiness" >> $POSTBOOTFILE
+	echo "	echo 40 > /proc/sys/vm/vfs_cache_pressure" >> $POSTBOOTFILE
+	echo "	echo 1 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk" >> $POSTBOOTFILE
+	echo "	echo 11 > /sys/class/thermal/thermal_message/sconfig" >> $POSTBOOTFILE
+	;;
+    *)
+	echo "	echo 300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
+	echo "	echo 825600 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
+	echo "	echo 1766400 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
+	echo "	echo 2323200 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
+	echo "	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus" >> $POSTBOOTFILE
+	echo "	echo \"0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0\" > /sys/module/cpu_boost/parameters/input_boost_freq" >> $POSTBOOTFILE
+	echo "	echo 64 > /sys/module/cpu_boost/parameters/input_boost_ms" >> $POSTBOOTFILE
+	echo "	echo 0 > /sys/module/cpu_boost/parameters/dynamic_stune_boost" >> $POSTBOOTFILE
+	echo "	echo 40 > /proc/sys/vm/swappiness" >> $POSTBOOTFILE
+	echo "	echo 100 > /proc/sys/vm/vfs_cache_pressure" >> $POSTBOOTFILE
+	echo "	echo 1 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk" >> $POSTBOOTFILE
+	echo "	echo 10 > /sys/class/thermal/thermal_message/sconfig" >> $POSTBOOTFILE
+esac
+echo "" >> $POSTBOOTFILE
+echo "        # Enable oom_reaper" >> $POSTBOOTFILE
+echo "        echo 1 > /sys/module/lowmemorykiller/parameters/oom_reaper" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "        # Enable bus-dcvs" >> $POSTBOOTFILE
+echo "        for cpubw in /sys/class/devfreq/*qcom,cpubw*" >> $POSTBOOTFILE
+echo "        do" >> $POSTBOOTFILE
+echo "            echo \"bw_hwmon\" > \$cpubw/governor" >> $POSTBOOTFILE
+echo "            echo 50 > \$cpubw/polling_interval" >> $POSTBOOTFILE
+echo "            echo \"2288 4577 6500 8132 9155 10681\" > \$cpubw/bw_hwmon/mbps_zones" >> $POSTBOOTFILE
+echo "            echo 4 > \$cpubw/bw_hwmon/sample_ms" >> $POSTBOOTFILE
+echo "            echo 50 > \$cpubw/bw_hwmon/io_percent" >> $POSTBOOTFILE
+echo "            echo 20 > \$cpubw/bw_hwmon/hist_memory" >> $POSTBOOTFILE
+echo "            echo 10 > \$cpubw/bw_hwmon/hyst_length" >> $POSTBOOTFILE
+echo "            echo 0 > \$cpubw/bw_hwmon/guard_band_mbps" >> $POSTBOOTFILE
+echo "            echo 250 > \$cpubw/bw_hwmon/up_scale" >> $POSTBOOTFILE
+echo "            echo 1600 > \$cpubw/bw_hwmon/idle_mbps" >> $POSTBOOTFILE
+echo "        done" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "        for llccbw in /sys/class/devfreq/*qcom,llccbw*" >> $POSTBOOTFILE
+echo "        do" >> $POSTBOOTFILE
+echo "            echo \"bw_hwmon\" > \$llccbw/governor" >> $POSTBOOTFILE
+echo "            echo 50 > \$llccbw/polling_interval" >> $POSTBOOTFILE
+echo "            echo \"1720 2929 3879 5931 6881\" > $llccbw/bw_hwmon/mbps_zones" >> $POSTBOOTFILE
+echo "            echo 4 > \$llccbw/bw_hwmon/sample_ms" >> $POSTBOOTFILE
+echo "            echo 80 > \$llccbw/bw_hwmon/io_percent" >> $POSTBOOTFILE
+echo "            echo 20 > \$llccbw/bw_hwmon/hist_memory" >> $POSTBOOTFILE
+echo "            echo 10 > \$llccbw/bw_hwmon/hyst_length" >> $POSTBOOTFILE
+echo "            echo 0 > \$llccbw/bw_hwmon/guard_band_mbps" >> $POSTBOOTFILE
+echo "            echo 250 > \$llccbw/bw_hwmon/up_scale" >> $POSTBOOTFILE
+echo "            echo 1600 > \$llccbw/bw_hwmon/idle_mbps" >> $POSTBOOTFILE
+echo "        done" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "	#Enable mem_latency governor for DDR scaling" >> $POSTBOOTFILE
+echo "        for memlat in /sys/class/devfreq/*qcom,memlat-cpu*" >> $POSTBOOTFILE
+echo "        do" >> $POSTBOOTFILE
+echo "	echo \"mem_latency\" > \$memlat/governor" >> $POSTBOOTFILE
+echo "            echo 10 > \$memlat/polling_interval" >> $POSTBOOTFILE
+echo "            echo 400 > \$memlat/mem_latency/ratio_ceil" >> $POSTBOOTFILE
+echo "        done" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "	#Enable mem_latency governor for L3 scaling" >> $POSTBOOTFILE
+echo "        for memlat in /sys/class/devfreq/*qcom,l3-cpu*" >> $POSTBOOTFILE
+echo "        do" >> $POSTBOOTFILE
+echo "            echo \"mem_latency\" > \$memlat/governor" >> $POSTBOOTFILE
+echo "            echo 10 > \$memlat/polling_interval" >> $POSTBOOTFILE
+echo "            echo 400 > \$memlat/mem_latency/ratio_ceil" >> $POSTBOOTFILE
+echo "        done" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "        #Enable userspace governor for L3 cdsp nodes" >> $POSTBOOTFILE
+echo "        for l3cdsp in /sys/class/devfreq/*qcom,l3-cdsp*" >> $POSTBOOTFILE
+echo "        do" >> $POSTBOOTFILE
+echo "            echo \"userspace\" > \$l3cdsp/governor" >> $POSTBOOTFILE
+echo "            chown -h system \$l3cdsp/userspace/set_freq" >> $POSTBOOTFILE
+echo "        done" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "	#Gold L3 ratio ceil" >> $POSTBOOTFILE
+echo "        echo 4000 > /sys/class/devfreq/soc:qcom,l3-cpu4/mem_latency/ratio_ceil" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "	echo \"compute\" > /sys/class/devfreq/soc:qcom,mincpubw/governor" >> $POSTBOOTFILE
+echo "	echo 10 > /sys/class/devfreq/soc:qcom,mincpubw/polling_interval" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "	# cpuset parameters" >> $POSTBOOTFILE
+echo "        echo 0-1 > /dev/cpuset/background/cpus" >> $POSTBOOTFILE
+echo "        echo 0-2 > /dev/cpuset/system-background/cpus" >> $POSTBOOTFILE
+echo "        echo 4-7 > /dev/cpuset/foreground/boost/cpus" >> $POSTBOOTFILE
+echo "        echo 0-2,4-7 > /dev/cpuset/foreground/cpus" >> $POSTBOOTFILE
+echo "        echo 0-7 > /dev/cpuset/top-app/cpus" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "	# Turn off scheduler boost at the end" >> $POSTBOOTFILE
+echo "        echo 0 > /proc/sys/kernel/sched_boost" >> $POSTBOOTFILE
+echo "	# Disable CPU Retention" >> $POSTBOOTFILE
+echo "        echo N > /sys/module/lpm_levels/L3/cpu0/ret/idle_enabled" >> $POSTBOOTFILE
+echo "        echo N > /sys/module/lpm_levels/L3/cpu1/ret/idle_enabled" >> $POSTBOOTFILE
+echo "        echo N > /sys/module/lpm_levels/L3/cpu2/ret/idle_enabled" >> $POSTBOOTFILE
+echo "        echo N > /sys/module/lpm_levels/L3/cpu3/ret/idle_enabled" >> $POSTBOOTFILE
+echo "        echo N > /sys/module/lpm_levels/L3/cpu4/ret/idle_enabled" >> $POSTBOOTFILE
+echo "        echo N > /sys/module/lpm_levels/L3/cpu5/ret/idle_enabled" >> $POSTBOOTFILE
+echo "        echo N > /sys/module/lpm_levels/L3/cpu6/ret/idle_enabled" >> $POSTBOOTFILE
+echo "        echo N > /sys/module/lpm_levels/L3/cpu7/ret/idle_enabled" >> $POSTBOOTFILE
+echo "	echo N > /sys/module/lpm_levels/L3/l3-dyn-ret/idle_enabled" >> $POSTBOOTFILE
+echo "        # Turn on sleep modes." >> $POSTBOOTFILE
+echo "        echo 0 > /sys/module/lpm_levels/parameters/sleep_disabled" >> $POSTBOOTFILE
+echo "	echo 100 > /proc/sys/vm/swappiness" >> $POSTBOOTFILE
+echo "	echo 120 > /proc/sys/vm/watermark_scale_factor" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "        # set lmk minfree for MemTotal greater than 6G" >> $POSTBOOTFILE
+echo "	arch_type=\`uname -m\`" >> $POSTBOOTFILE
+echo "	MemTotalStr=\`cat /proc/meminfo | grep MemTotal\`" >> $POSTBOOTFILE
+echo "	MemTotal=\${MemTotalStr:16:8}" >> $POSTBOOTFILE
+echo "	if [ \"\$arch_type\" == \"aarch64\" ] && [ \$MemTotal -gt 5505024 ]; then" >> $POSTBOOTFILE
+echo "	    echo \"18432,23040,27648,32256,85296,120640\" > /sys/module/lowmemorykiller/parameters/minfree" >> $POSTBOOTFILE
+echo "	fi" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "        setprop vendor.post_boot.parsed 1" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "# Let kernel know our image version/variant/crm_version" >> $POSTBOOTFILE
+echo "if [ -f /sys/devices/soc0/select_image ]; then" >> $POSTBOOTFILE
+echo "    image_version=\"10:\"" >> $POSTBOOTFILE
+echo "    image_version+=\`getprop ro.build.id\`" >> $POSTBOOTFILE
+echo "    image_version+=\":\"" >> $POSTBOOTFILE
+echo "    image_version+=\`getprop ro.build.version.incremental\`" >> $POSTBOOTFILE
+echo "    image_variant=\`getprop ro.product.name\`" >> $POSTBOOTFILE
+echo "    image_variant+=\"-\"" >> $POSTBOOTFILE
+echo "    image_variant+=\`getprop ro.build.type\`" >> $POSTBOOTFILE
+echo "    oem_version=\`getprop ro.build.version.codename\`" >> $POSTBOOTFILE
+echo "    echo 10 > /sys/devices/soc0/select_image" >> $POSTBOOTFILE
+echo "    echo \$image_version > /sys/devices/soc0/image_version" >> $POSTBOOTFILE
+echo "    echo \$image_variant > /sys/devices/soc0/image_variant" >> $POSTBOOTFILE
+echo "    echo \$oem_version > /sys/devices/soc0/image_crm_version" >> $POSTBOOTFILE
+echo "fi" >> $POSTBOOTFILE
+echo "" >> $POSTBOOTFILE
+echo "# Parse misc partition path and set property" >> $POSTBOOTFILE
+echo "misc_link=\$(ls -l /dev/block/bootdevice/by-name/misc)" >> $POSTBOOTFILE
+echo "real_path=\${misc_link##*>}" >> $POSTBOOTFILE
+echo "setprop persist.vendor.mmi.misc_dev_path \$real_path" >> $POSTBOOTFILE
+else
 echo "#!/system/bin/sh" >> $CONFIGFILE
 echo "" >> $CONFIGFILE
 echo "################################################################################" >> $CONFIGFILE
@@ -311,7 +562,20 @@ echo "writepid_sbg \$HEALTHD;" >> $CONFIGFILE
 echo "writepid_sbg \$OEMLOGKIT;" >> $CONFIGFILE
 echo "writepid_sbg \$NETD;" >> $CONFIGFILE
 echo "}&" >> $CONFIGFILE
+fi
 
+if [ ! -d $ramdisk/.backup ]; then
+chmod -R 755 /tmp/anykernel/ramdisk/init.qcom.post_boot.sh;
+chown -R root:root /tmp/anykernel/ramdisk/init.qcom.post_boot.sh;
+umount /vendor || true
+mount -o rw /dev/block/bootdevice/by-name/vendor /vendor
+ui_print " "; ui_print "Your device is not rooted so modifying qcom_post_boot...";
+ui_print "shadow.prop functionality will be limited to profiles only...";
+exec_util "cp -a /tmp/anykernel/ramdisk/init.qcom.post_boot.sh /vendor/bin/"
+set_con qti_init_shell_exec /vendor/bin/init.qcom.post_boot.sh
+umount /vendor || true
+rm $ramdisk/init.qcom.post_boot.sh
+fi
 
 # Set Permissions
 chmod -R 750 $ramdisk/*;
