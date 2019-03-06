@@ -108,7 +108,7 @@ echo "function start_hbtp()" >> $POSTBOOTFILE
 echo "{" >> $POSTBOOTFILE
 echo "        # Start the Host based Touch processing but not in the power off mode." >> $POSTBOOTFILE
 echo "        bootmode=\`getprop ro.bootmode\`" >> $POSTBOOTFILE
-echo "        if [ "charger" != $bootmode ]; then" >> $POSTBOOTFILE
+echo "        if [ \"charger\" != \$bootmode ]; then" >> $POSTBOOTFILE
 echo "                start vendor.hbtp" >> $POSTBOOTFILE
 echo "        fi" >> $POSTBOOTFILE
 echo "}" >> $POSTBOOTFILE
@@ -156,7 +156,7 @@ case $PROFILE in
 	echo "	echo 825600 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
 	echo "	echo 1766400 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
 	echo "	echo 2803200 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
-	echo "	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus" >> $POSTBOOTFILE
+	echo "	echo 0 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus" >> $POSTBOOTFILE
 	echo "	echo \"0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0\" > /sys/module/cpu_boost/parameters/input_boost_freq" >> $POSTBOOTFILE
 	echo "	echo 250 > /sys/module/cpu_boost/parameters/input_boost_ms" >> $POSTBOOTFILE
 	echo "	echo 5 > /sys/module/cpu_boost/parameters/dynamic_stune_boost" >> $POSTBOOTFILE
@@ -168,8 +168,8 @@ case $PROFILE in
     2)
 	echo "	echo 300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
 	echo "	echo 825600 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
-	echo "	echo 1516800 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
-	echo "	echo 1536000 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
+	echo "	echo 1766400 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
+	echo "	echo 2323200 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
 	echo "	echo 0 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus" >> $POSTBOOTFILE
 	echo "	echo \"0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0\" > /sys/module/cpu_boost/parameters/input_boost_freq" >> $POSTBOOTFILE
 	echo "	echo 30 > /sys/module/cpu_boost/parameters/input_boost_ms" >> $POSTBOOTFILE
@@ -177,17 +177,17 @@ case $PROFILE in
 	echo "	echo 20 > /proc/sys/vm/swappiness" >> $POSTBOOTFILE
 	echo "	echo 40 > /proc/sys/vm/vfs_cache_pressure" >> $POSTBOOTFILE
 	echo "	echo 1 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk" >> $POSTBOOTFILE
-	echo "	echo 11 > /sys/class/thermal/thermal_message/sconfig" >> $POSTBOOTFILE
+	echo "	echo 10 > /sys/class/thermal/thermal_message/sconfig" >> $POSTBOOTFILE
 	;;
     *)
 	echo "	echo 300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
 	echo "	echo 825600 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
 	echo "	echo 1766400 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
-	echo "	echo 2323200 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
-	echo "	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus" >> $POSTBOOTFILE
+	echo "	echo 2803200 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
+	echo "	echo 0 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus" >> $POSTBOOTFILE
 	echo "	echo \"0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0\" > /sys/module/cpu_boost/parameters/input_boost_freq" >> $POSTBOOTFILE
 	echo "	echo 64 > /sys/module/cpu_boost/parameters/input_boost_ms" >> $POSTBOOTFILE
-	echo "	echo 0 > /sys/module/cpu_boost/parameters/dynamic_stune_boost" >> $POSTBOOTFILE
+	echo "	echo 3 > /sys/module/cpu_boost/parameters/dynamic_stune_boost" >> $POSTBOOTFILE
 	echo "	echo 40 > /proc/sys/vm/swappiness" >> $POSTBOOTFILE
 	echo "	echo 100 > /proc/sys/vm/vfs_cache_pressure" >> $POSTBOOTFILE
 	echo "	echo 1 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk" >> $POSTBOOTFILE
@@ -349,7 +349,7 @@ case $PROFILE in
 	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 2803200" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 576000" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 825600" >> $CONFIGFILE
-	echo "write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 2" >> $CONFIGFILE
+	echo "write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 0" >> $CONFIGFILE
 	echo "write /sys/module/cpu_boost/parameters/input_boost_freq \"0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0\"" >> $CONFIGFILE
 	echo "write /sys/module/cpu_boost/parameters/input_boost_ms 250" >> $CONFIGFILE
 	echo "write /sys/module/cpu_boost/parameters/dynamic_stune_boost 5" >> $CONFIGFILE
@@ -364,8 +364,8 @@ case $PROFILE in
     2)
 	echo "# Profile - Battery" >> $CONFIGFILE
 	echo "" >> $CONFIGFILE
-	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1516800" >> $CONFIGFILE
-	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 1536000" >> $CONFIGFILE
+	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1766400" >> $CONFIGFILE
+	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 2323200" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 300000" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 825600" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 0" >> $CONFIGFILE
@@ -378,19 +378,19 @@ case $PROFILE in
 	echo "write /proc/sys/vm/swappiness 20" >> $CONFIGFILE
 	echo "write /proc/sys/vm/vfs_cache_pressure 40" >> $CONFIGFILE
 	echo "write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1" >> $CONFIGFILE
-	echo "write /sys/class/thermal/thermal_message/sconfig 11" >> $CONFIGFILE
+	echo "write /sys/class/thermal/thermal_message/sconfig 10" >> $CONFIGFILE
         ;;
     *)
 	echo "# Profile - Balanced" >> $CONFIGFILE
 	echo "" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1766400" >> $CONFIGFILE
-	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 2323200" >> $CONFIGFILE
+	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 2803200" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 300000" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 825600" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 0" >> $CONFIGFILE
 	echo "write /sys/module/cpu_boost/parameters/input_boost_freq \"0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0\"" >> $CONFIGFILE
 	echo "write /sys/module/cpu_boost/parameters/input_boost_ms 64" >> $CONFIGFILE
-	echo "write /sys/module/cpu_boost/parameters/dynamic_stune_boost 0" >> $CONFIGFILE
+	echo "write /sys/module/cpu_boost/parameters/dynamic_stune_boost 3" >> $CONFIGFILE
 	echo "write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz" >> $CONFIGFILE
 	echo "write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 0" >> $CONFIGFILE
 	echo "write /sys/class/kgsl/kgsl-3d0/max_gpuclk 710000000" >> $CONFIGFILE
