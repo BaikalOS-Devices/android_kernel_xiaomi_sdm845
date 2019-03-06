@@ -636,6 +636,7 @@ static u64 core_ctl_check_timestamp;
 
 int core_ctl_set_boost(bool boost)
 {
+/*
 	unsigned int index = 0;
 	struct cluster_data *cluster;
 	unsigned long flags;
@@ -670,8 +671,9 @@ int core_ctl_set_boost(bool boost)
 	}
 
 	trace_core_ctl_set_boost(cluster->boost, ret);
-
-	return ret;
+    
+	return ret; */
+	return 0;
 }
 EXPORT_SYMBOL(core_ctl_set_boost);
 
@@ -899,11 +901,13 @@ static void __try_to_unisolate(struct cluster_data *cluster,
 
 		if (!c->isolated_by_us)
 			continue;
+
+		if (cluster->active_cpus == need)
+			break;
+
 		if ((cpu_online(c->cpu) && !cpu_isolated(c->cpu)) ||
 			(!force && c->not_preferred))
 			continue;
-		if (cluster->active_cpus == need)
-			break;
 
 		spin_unlock_irqrestore(&state_lock, flags);
 
