@@ -564,18 +564,24 @@ echo "writepid_sbg \$NETD;" >> $CONFIGFILE
 echo "}&" >> $CONFIGFILE
 fi
 
+# Ship fstab with f2fs mount points and flags
+ui_print " "; ui_print "Shipping modified fstab with f2fs mount points...";
+umount /vendor || true
+mount -o rw /dev/block/bootdevice/by-name/vendor /vendor
+chmod -R 640 /tmp/anykernel/ramdisk/fstab.qcom;
+exec_util "cp -a /tmp/anykernel/ramdisk/fstab.qcom /vendor/etc/"
+rm $ramdisk/fstab.qcom
 if [ ! -d $ramdisk/.backup ]; then
 chmod -R 755 /tmp/anykernel/ramdisk/init.qcom.post_boot.sh;
 chown -R root:root /tmp/anykernel/ramdisk/init.qcom.post_boot.sh;
-umount /vendor || true
-mount -o rw /dev/block/bootdevice/by-name/vendor /vendor
 ui_print " "; ui_print "Your device is not rooted so modifying qcom_post_boot...";
 ui_print "shadow.prop functionality will be limited to profiles only...";
 exec_util "cp -a /tmp/anykernel/ramdisk/init.qcom.post_boot.sh /vendor/bin/"
 set_con qti_init_shell_exec /vendor/bin/init.qcom.post_boot.sh
-umount /vendor || true
 rm $ramdisk/init.qcom.post_boot.sh
 fi
+umount /vendor || true
+
 
 # Set Permissions
 chmod -R 750 $ramdisk/*;
