@@ -136,16 +136,16 @@ echo "	echo 95 > /proc/sys/kernel/sched_group_downmigrate" >> $POSTBOOTFILE
 echo "	echo 1 > /proc/sys/kernel/sched_walt_rotate_big_tasks" >> $POSTBOOTFILE
 echo "" >> $POSTBOOTFILE
 echo "	# configure governor settings for little cluster" >> $POSTBOOTFILE
-echo "	echo \"pixutil\" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor" >> $POSTBOOTFILE
-echo "	echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/pixutil/rate_limit_us" >> $POSTBOOTFILE
-echo "	echo 1209600 > /sys/devices/system/cpu/cpu0/cpufreq/pixutil/hispeed_freq" >> $POSTBOOTFILE
-echo "	echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/pixutil/pl" >> $POSTBOOTFILE
+echo "	echo \"schedutil\" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor" >> $POSTBOOTFILE
+echo "	echo 0 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/rate_limit_us" >> $POSTBOOTFILE
+echo "	echo 1209600 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/hispeed_freq" >> $POSTBOOTFILE
+echo "	echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/pl" >> $POSTBOOTFILE
 echo "" >> $POSTBOOTFILE
 echo "	# configure governor settings for big cluster" >> $POSTBOOTFILE
-echo "	echo \"pixutil\" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor" >> $POSTBOOTFILE
-echo "	echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/pixutil/rate_limit_us" >> $POSTBOOTFILE
-echo "	echo 1574400 > /sys/devices/system/cpu/cpu4/cpufreq/pixutil/hispeed_freq" >> $POSTBOOTFILE
-echo "	echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/pixutil/pl" >> $POSTBOOTFILE
+echo "	echo \"schedutil\" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor" >> $POSTBOOTFILE
+echo "	echo 0 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/rate_limit_us" >> $POSTBOOTFILE
+echo "	echo 1574400 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/hispeed_freq" >> $POSTBOOTFILE
+echo "	echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/pl" >> $POSTBOOTFILE
 echo "	echo \"0:0 1:0 2:0 3:0 4:2323200 5:0 6:0 7:0\" > /sys/module/cpu_boost/parameters/powerkey_input_boost_freq" >> $POSTBOOTFILE
 echo "	echo 400 > /sys/module/cpu_boost/parameters/powerkey_input_boost_ms" >> $POSTBOOTFILE
 echo "" >> $POSTBOOTFILE
@@ -337,8 +337,8 @@ echo "{" >> $CONFIGFILE
 echo "" >> $CONFIGFILE
 echo "sleep 10;" >> $CONFIGFILE
 echo "" >> $CONFIGFILE
-echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor \"pixutil\"" >> $CONFIGFILE
-echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor \"pixutil\"" >> $CONFIGFILE
+echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor \"schedutil\"" >> $CONFIGFILE
+echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor \"schedutil\"" >> $CONFIGFILE
 echo "" >> $CONFIGFILE
 
 case $PROFILE in
