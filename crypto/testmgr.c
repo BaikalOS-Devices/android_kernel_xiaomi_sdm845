@@ -62,7 +62,7 @@ int alg_test(const char *driver, const char *alg, u32 type, u32 mask)
  */
 #define IDX1		32
 #define IDX2		32400
-#define IDX3		1
+#define IDX3		1511
 #define IDX4		8193
 #define IDX5		22222
 #define IDX6		17101
@@ -3675,6 +3675,15 @@ static const struct alg_test_desc alg_test_descs[] = {
 			}
 		}
 	}, {
+		.alg = "nhpoly1305",
+		.test = alg_test_hash,
+		.suite = {
+			.hash = {
+				.vecs = nhpoly1305_tv_template,
+				.count = ARRAY_SIZE(nhpoly1305_tv_template),
+			}
+		}
+	}, {
 		.alg = "ofb(aes)",
 		.test = alg_test_skcipher,
 		.fips_allowed = 1,
@@ -4027,6 +4036,36 @@ static const struct alg_test_desc alg_test_descs[] = {
 			}
 		}
 	}, {
+		.alg = "xchacha12",
+		.test = alg_test_skcipher,
+		.suite = {
+			.cipher = {
+				.enc = {
+					.vecs = xchacha12_tv_template,
+					.count = ARRAY_SIZE(xchacha12_tv_template),
+				},
+				.dec = {
+					.vecs = xchacha12_tv_template,
+					.count = ARRAY_SIZE(xchacha12_tv_template),
+				},
+			}
+		},
+	}, {
+		.alg = "xchacha20",
+		.test = alg_test_skcipher,
+		.suite = {
+			.cipher = {
+				.enc = {
+					.vecs = xchacha20_tv_template,
+					.count = ARRAY_SIZE(xchacha20_tv_template),
+				},
+				.dec = {
+					.vecs = xchacha20_tv_template,
+					.count = ARRAY_SIZE(xchacha20_tv_template),
+				},
+			}
+		},
+	}, {
 		.alg = "xts(aes)",
 		.test = alg_test_skcipher,
 		.fips_allowed = 1,
@@ -4129,6 +4168,22 @@ static const struct alg_test_desc alg_test_descs[] = {
 				.dec = {
 					.vecs = tf_xts_dec_tv_template,
 					.count = TF_XTS_DEC_TEST_VECTORS
+				}
+			}
+		}
+	}, {
+		.alg = "zstd",
+		.test = alg_test_comp,
+		.fips_allowed = 1,
+		.suite = {
+			.comp = {
+				.comp = {
+					.vecs = zstd_comp_tv_template,
+					.count = ZSTD_COMP_TEST_VECTORS
+				},
+				.decomp = {
+					.vecs = zstd_decomp_tv_template,
+					.count = ZSTD_DECOMP_TEST_VECTORS
 				}
 			}
 		}
