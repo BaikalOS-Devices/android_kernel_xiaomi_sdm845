@@ -1064,9 +1064,6 @@ struct f2fs_bio_info {
 	struct list_head io_list;	/* track fios */
 };
 
-/* iv sector for security/pfe/pfk_fscrypt.c and f2fs */
-#define PG_DUN(i,p)                                            \
-	((((i)->i_ino & 0xffffffff) << 32) | ((p)->index & 0xffffffff))
 
 #define FDEV(i)				(sbi->devs[i])
 #define RDEV(i)				(raw_super->devs[i])
@@ -1336,6 +1333,8 @@ struct f2fs_sb_info {
 
 	/* Precomputed FS UUID checksum for seeding other checksums */
 	__u32 s_chksum_seed;
+
+	struct list_head list;
 };
 
 struct f2fs_private_dio {
@@ -3193,6 +3192,11 @@ void f2fs_clear_radix_tree_dirty_tag(struct page *page);
  */
 int f2fs_start_gc_thread(struct f2fs_sb_info *sbi);
 void f2fs_stop_gc_thread(struct f2fs_sb_info *sbi);
+void f2fs_start_all_gc_threads(void);
+void f2fs_stop_all_gc_threads(void);
+void f2fs_sbi_list_add(struct f2fs_sb_info *sbi);
+void f2fs_sbi_list_del(struct f2fs_sb_info *sbi);
+
 block_t f2fs_start_bidx_of_node(unsigned int node_ofs, struct inode *inode);
 int f2fs_gc(struct f2fs_sb_info *sbi, bool sync, bool background,
 			unsigned int segno);
