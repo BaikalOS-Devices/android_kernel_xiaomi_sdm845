@@ -2275,7 +2275,7 @@ static struct page *f2fs_read_metadata_page(struct inode *inode, pgoff_t index)
 	if (WARN_ON(f2fs_has_inline_data(inode)))
 		return ERR_PTR(-EINVAL);
 
-	return find_data_page(inode, index, F2FS_GETPAGE_SKIP_VERITY);
+	return f2fs_find_data_page(inode, index, F2FS_GETPAGE_SKIP_VERITY);
 }
 
 static const struct fsverity_operations f2fs_verityops = {
