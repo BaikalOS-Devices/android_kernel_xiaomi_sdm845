@@ -1134,7 +1134,12 @@ static void nvt_ts_work_func(struct work_struct *work)
 	int32_t i = 0;
 	int32_t finger_cnt = 0;
 
+    pm_wakeup_event(&ts->client->dev,150);
+    NVT_ERR("Touch work pm_wakeup\n");
+
 	mutex_lock(&ts->lock);
+
+
 
 	if (ts->dev_pm_suspend) {
 		ret = wait_for_completion_timeout(&ts->dev_pm_suspend_completion, msecs_to_jiffies(500));
@@ -1159,6 +1164,7 @@ static void nvt_ts_work_func(struct work_struct *work)
 
 #if WAKEUP_GESTURE
 	if (bTouchIsAwake == 0) {
+        NVT_ERR("Wakeup gesture report\n");
 		input_id = (uint8_t)(point_data[1] >> 3);
 		nvt_ts_wakeup_gesture_report(input_id, point_data);
 		enable_irq(ts->client->irq);
@@ -1273,6 +1279,10 @@ static irqreturn_t nvt_ts_irq_handler(int32_t irq, void *dev_id)
 	if (bTouchIsAwake == 0) {
 		dev_dbg(&ts->client->dev, "%s gesture wakeup\n", __func__);
 	}
+
+    NVT_ERR("Touch irq pm_wakeup\n");
+    pm_wakeup_event(&ts->client->dev,150);
+
 	queue_work(nvt_wq, &ts->nvt_work);
 
 	return IRQ_HANDLED;
@@ -1669,7 +1679,11 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 	mutex_unlock(&ts->lock);
 
 	/*---create workqueue---*/
-	nvt_wq = create_workqueue("nvt_wq");
+	// nvt_wq = create_workqueue("nvt_wq");
+
+    nvt_wq = alloc_workqueue("nvt-event-queue",
+			    WQ_UNBOUND | WQ_HIGHPRI | WQ_CPU_INTENSIVE, 1);
+
 	if (!nvt_wq) {
 		NVT_ERR("nvt_wq create workqueue failed\n");
 		ret = -ENOMEM;
@@ -2137,7 +2151,7 @@ static int nvt_pm_suspend(struct device *dev)
 		NVT_LOG("enable touch irq wake\n");
 		enable_irq_wake(ts->client->irq);
 	}
-	ts->dev_pm_suspend = true;
+	ts->dev_pm_suspend = false;
 	reinit_completion(&ts->dev_pm_suspend_completion);
 
 	return 0;
