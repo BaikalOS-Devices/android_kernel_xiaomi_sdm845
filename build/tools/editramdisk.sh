@@ -27,6 +27,7 @@ FSYNC=$(grep "CONFIG_SHADOW_FSYNC" "$PROPFILE" | cut -d '=' -f2)
 COLPROF=$(grep "CONFIG_SHADOW_COLPROF" "$PROPFILE" | cut -d '=' -f2)
 USBFC=$(grep "CONFIG_SHADOW_USBFC" "$PROPFILE" | cut -d '=' -f2)
 DT2W=$(grep "CONFIG_SHADOW_DT2W" "$PROPFILE" | cut -d '=' -f2)
+ZRAM=$(grep "CONFIG_SHADOW_ZRAM" "$PROPFILE" | cut -d '=' -f2)
 
 else
 
@@ -35,6 +36,7 @@ FSYNC=1
 COLPROF=0
 USBFC=0
 DT2W=0
+ZRAM=1
 
 echo "# Shadow Kernel Properties" >> $PROPFILE
 echo "" >> $PROPFILE
@@ -71,6 +73,13 @@ echo "" >> $PROPFILE
 echo "CONFIG_SHADOW_DT2W=0" >> $PROPFILE
 echo "" >> $PROPFILE
 echo "" >> $PROPFILE
+echo "# zRAM - Increases performance by using a compressed block device" >> $PROPFILE
+echo "# 0 - Off, 1 - On" >> $PROPFILE
+echo "" >> $PROPFILE
+echo "CONFIG_SHADOW_ZRAM=1" >> $PROPFILE
+echo "" >> $PROPFILE
+echo "" >> $PROPFILE
+
 
 fi
 
@@ -475,6 +484,14 @@ echo "write /proc/touchpanel/wake_gesture 0" >> $CONFIGFILE
 fi
 echo "" >> $CONFIGFILE
 echo "" >> $CONFIGFILE
+
+if [ $ZRAM = 0 ]; then
+echo "# zRAM" >> $CONFIGFILE
+echo "" >> $CONFIGFILE
+echo "system/bin/swapoff /dev/block/zram0" >> $CONFIGFILE
+echo "" >> $CONFIGFILE
+echo "" >> $CONFIGFILE
+fi
 
 echo "# Set the default IRQ affinity to the silver cluster." >> $CONFIGFILE
 echo "write /proc/irq/default_smp_affinity f" >> $CONFIGFILE
