@@ -35,14 +35,14 @@ reset_ak() {
 
 # dump boot and extract ramdisk
 split_boot() {
-  local nooktest nookoff dumpfail;
+  local nooktest nookoff uimgsize dumpfail;
   if [ ! -e "$(echo $block | cut -d\  -f1)" ]; then
     ui_print " "; ui_print "Invalid partition. Aborting..."; exit 1;
   fi;
   if [ -f "$bin/nanddump" ]; then
     $bin/nanddump -f /tmp/anykernel/boot.img $block;
   else
-    dd if=$block of=/tmp/anykernel/boot.img;
+    dd if=$block of=/tmp/anykernel/boot.img bs=1048576;
   fi;
   nooktest=$(strings /tmp/anykernel/boot.img | grep -E 'Red Loader|Green Loader|Green Recovery|eMMC boot.img|eMMC recovery.img|BauwksBoot');
   if [ "$nooktest" ]; then
@@ -63,6 +63,11 @@ split_boot() {
     $bin/unpackelf -i /tmp/anykernel/boot.img -o $split_img;
     mv -f $split_img/boot.img-ramdisk.cpio.gz $split_img/boot.img-ramdisk.gz;
   elif [ -f "$bin/dumpimage" ]; then
+    uimgsize=$(($(printf '%d\n' 0x$(hexdump -n 4 -s 12 -e '16/1 "%02x""\n"' /tmp/anykernel/boot.img)) + 64));
+    if [ "$(wc -c < /tmp/anykernel/boot.img)" != "$uimgsize" ]; then
+      mv -f /tmp/anykernel/boot.img /tmp/anykernel/boot-orig.img;
+      dd bs=$uimgsize count=1 conv=notrunc if=/tmp/anykernel/boot-orig.img of=/tmp/anykernel/boot.img;
+    fi;
     $bin/dumpimage -l /tmp/anykernel/boot.img;
     $bin/dumpimage -l /tmp/anykernel/boot.img > $split_img/boot.img-header;
     grep "Name:" $split_img/boot.img-header | cut -c15- > $split_img/boot.img-name;
@@ -113,13 +118,19 @@ unpack_ramdisk() {
     '   B   Z   h'*) compext="bz2"; unpackcmd="bzip2";;
     ' stx   !   L can') compext="lz4-l"; unpackcmd="$bin/lz4";;
     ' etx   !   L can'|' eot   "   M can') compext="lz4"; unpackcmd="$bin/lz4";;
+    '   0   7   0   7') compext=""; unpackcmd="cat";;
+    '') ui_print " "; ui_print "Ramdisk not found in image. Aborting..."; exit 1;;
     *) ui_print " "; ui_print "Unknown ramdisk compression. Aborting..."; exit 1;;
   esac;
-  mv -f $split_img/boot.img-ramdisk.gz $split_img/boot.img-ramdisk.cpio.$compext;
+  if [ "$compext" ]; then
+    compext=.$compext;
+    unpackcmd="$unpackcmd -dc";
+  fi;
+  mv -f $split_img/boot.img-ramdisk.gz $split_img/boot.img-ramdisk.cpio$compext;
   mkdir -p $ramdisk;
   chmod 755 $ramdisk;
   cd $ramdisk;
-  $unpackcmd -dc $split_img/boot.img-ramdisk.cpio.$compext | EXTRACT_UNSAFE_SYMLINKS=1 cpio -i -d;
+  $unpackcmd $split_img/boot.img-ramdisk.cpio$compext | EXTRACT_UNSAFE_SYMLINKS=1 cpio -i -d;
   if [ $? != 0 -o -z "$(ls $ramdisk)" ]; then
     ui_print " "; ui_print "Unpacking ramdisk failed. Aborting..."; exit 1;
   fi;
@@ -134,7 +145,8 @@ dump_boot() {
 repack_ramdisk() {
   local compext repackcmd;
   case $ramdisk_compression in
-    auto|"") compext=`echo $split_img/*-ramdisk.cpio.* | rev | cut -d. -f1 | rev`;;
+    auto|"") compext=`echo $split_img/*-ramdisk.cpio* | rev | cut -d. -f1 | rev`; test "$compext" == "cpio" && compext="";;
+    none|cpio) compext="";;
     *) compext=$ramdisk_compression;;
   esac;
   case $compext in
@@ -145,20 +157,25 @@ repack_ramdisk() {
     bz2) repackcmd="bzip2";;
     lz4-l) repackcmd="$bin/lz4 -l";;
     lz4) repackcmd="$bin/lz4";;
+    "") repackcmd="cat";;
   esac;
+  if [ "$compext" ]; then
+    compext=.$compext;
+    repackcmd="$repackcmd -9c";
+  fi;
   if [ -f "$bin/mkbootfs" ]; then
-    $bin/mkbootfs $ramdisk | $repackcmd -9c > /tmp/anykernel/ramdisk-new.cpio.$compext;
+    $bin/mkbootfs $ramdisk | $repackcmd > /tmp/anykernel/ramdisk-new.cpio$compext;
   else
     cd $ramdisk;
-    find . | cpio -H newc -o | $repackcmd -9c > /tmp/anykernel/ramdisk-new.cpio.$compext;
+    find . | cpio -H newc -o | $repackcmd > /tmp/anykernel/ramdisk-new.cpio$compext;
   fi;
   if [ $? != 0 ]; then
     ui_print " "; ui_print "Repacking ramdisk failed. Aborting..."; exit 1;
   fi;
   cd /tmp/anykernel;
   if [ -f "$bin/mkmtkhdr" ]; then
-    $bin/mkmtkhdr --rootfs ramdisk-new.cpio.$compext;
-    mv -f ramdisk-new.cpio.$compext-mtk ramdisk-new.cpio.$compext;
+    $bin/mkmtkhdr --rootfs ramdisk-new.cpio$compext;
+    mv -f ramdisk-new.cpio$compext-mtk ramdisk-new.cpio$compext;
   fi;
 }
 flash_dtbo() {
@@ -177,8 +194,7 @@ flash_dtbo() {
       $bin/flash_erase $dtbo_block 0 0;
       $bin/nandwrite -p $dtbo_block /tmp/anykernel/$dtbo;
     else
-      dd if=/dev/zero of=$dtbo_block 2>/dev/null;
-      dd if=/tmp/anykernel/$dtbo of=$dtbo_block;
+      cat /tmp/anykernel/$dtbo /dev/zero > $dtbo_block 2>/dev/null;
     fi;
   fi;
 }
@@ -247,8 +263,8 @@ flash_boot() {
     kernel=`ls *-zImage`;
     kernel=$split_img/$kernel;
   fi;
-  if [ -f /tmp/anykernel/ramdisk-new.cpio.* ]; then
-    rd=`echo /tmp/anykernel/ramdisk-new.cpio.*`;
+  if [ -f /tmp/anykernel/ramdisk-new.cpio* ]; then
+    rd=`echo /tmp/anykernel/ramdisk-new.cpio*`;
   else
     rd=`ls *-ramdisk.*`;
     rd="$split_img/$rd";
@@ -341,8 +357,7 @@ flash_boot() {
     $bin/flash_erase $block 0 0;
     $bin/nandwrite -p $block /tmp/anykernel/boot-new.img;
   else
-    dd if=/dev/zero of=$block 2>/dev/null;
-    dd if=/tmp/anykernel/boot-new.img of=$block;
+    cat /tmp/anykernel/boot-new.img /dev/zero > $block 2>/dev/null;
   fi;
 }
 write_boot() {

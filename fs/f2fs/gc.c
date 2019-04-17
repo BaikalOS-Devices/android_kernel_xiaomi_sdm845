@@ -145,6 +145,13 @@ do_gc:
 			f2fs_msg(sbi->sb, KERN_INFO,
 				"No more GC victim found, "
 				"sleeping for %u ms", wait_ms);
+
+			/*
+			 * Rapid GC would have cleaned hundreds of segments
+			 * that would not be read again anytime soon.
+			 */
+			mm_drop_caches(3);
+			f2fs_msg(sbi->sb, KERN_INFO, "dropped caches");
 		}
 
 		trace_f2fs_background_gc(sbi->sb, wait_ms,
@@ -296,27 +303,24 @@ static int msm_drm_notifier_callback(struct notifier_block *self,
 	int *blank;
 
 	if (event != MSM_DRM_EVENT_BLANK)
-		return 0;
+		return NOTIFY_DONE;
 
-	if (evdata->id != MSM_DRM_PRIMARY_DISPLAY)
-		return 0;
+	if (!evdata || !evdata->data || evdata->id != MSM_DRM_PRIMARY_DISPLAY)
+		return NOTIFY_DONE;
 
-	if (evdata && evdata->data) {
-		blank = evdata->data;
-
-		switch (*blank) {
-		case MSM_DRM_BLANK_POWERDOWN:
-			screen_on = false;
-			queue_work(system_power_efficient_wq, &f2fs_gc_fb_worker);
-			break;
-		case MSM_DRM_BLANK_UNBLANK:
-			screen_on = true;
-			queue_work(system_power_efficient_wq, &f2fs_gc_fb_worker);
-			break;
-		}
+	blank = evdata->data;
+	switch (*blank) {
+	case MSM_DRM_BLANK_POWERDOWN:
+		screen_on = false;
+		queue_work(system_power_efficient_wq, &f2fs_gc_fb_worker);
+		break;
+	case MSM_DRM_BLANK_UNBLANK:
+		screen_on = true;
+		queue_work(system_power_efficient_wq, &f2fs_gc_fb_worker);
+		break;
 	}
 
-	return 0;
+	return NOTIFY_OK;
 }
 
 static struct notifier_block fb_notifier_block = {
@@ -1403,11 +1407,12 @@ int f2fs_gc(struct f2fs_sb_info *sbi, bool sync,
 		.ilist = LIST_HEAD_INIT(gc_list.ilist),
 		.iroot = RADIX_TREE_INIT(GFP_NOFS),
 	};
+	struct super_block *sb = sbi->sb;
 	unsigned long long last_skipped = sbi->skipped_atomic_files[FG_GC];
 	unsigned long long first_skipped;
 	unsigned int skipped_round = 0, round = 0;
 
-	trace_f2fs_gc_begin(sbi->sb, sync, background,
+	trace_f2fs_gc_begin(sb, sync, background,
 				get_pages(sbi, F2FS_DIRTY_NODES),
 				get_pages(sbi, F2FS_DIRTY_DENTS),
 				get_pages(sbi, F2FS_DIRTY_IMETA),
@@ -1420,7 +1425,7 @@ int f2fs_gc(struct f2fs_sb_info *sbi, bool sync,
 	sbi->skipped_gc_rwsem = 0;
 	first_skipped = last_skipped;
 gc_more:
-	if (unlikely(!(sbi->sb->s_flags & MS_ACTIVE))) {
+	if (unlikely(!(sb->s_flags & MS_ACTIVE))) {
 		ret = -EINVAL;
 		goto stop;
 	}
@@ -1495,7 +1500,7 @@ stop:
 	SIT_I(sbi)->last_victim[ALLOC_NEXT] = 0;
 	SIT_I(sbi)->last_victim[FLUSH_DEVICE] = init_segno;
 
-	trace_f2fs_gc_end(sbi->sb, ret, total_freed, sec_freed,
+	trace_f2fs_gc_end(sb, ret, total_freed, sec_freed,
 				get_pages(sbi, F2FS_DIRTY_NODES),
 				get_pages(sbi, F2FS_DIRTY_DENTS),
 				get_pages(sbi, F2FS_DIRTY_IMETA),
@@ -1510,6 +1515,13 @@ stop:
 
 	if (sync && !ret)
 		ret = sec_freed ? 0 : -EAGAIN;
+
+	if (gc_type == FG_GC && down_read_trylock(&sb->s_umount)) {
+		writeback_inodes_sb(sb, WB_REASON_SYNC);
+		sync_inodes_sb(sb);
+		up_read(&sb->s_umount);
+	}
+
 	return ret;
 }
 
