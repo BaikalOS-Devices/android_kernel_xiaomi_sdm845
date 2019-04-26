@@ -44,7 +44,7 @@ echo "# Change values to customize kernel defaults during installation" >> $PROP
 echo "" >> $PROPFILE
 echo "" >> $PROPFILE
 echo "# Profile - Profiles according to your needs" >> $PROPFILE
-echo "# 0 - Balanced, 1 - Performance, 2 - Battery" >> $PROPFILE
+echo "# 0 - Balanced, 1 - Performance, 2 - Battery, 3 - BattPerf" >> $PROPFILE
 echo "" >> $PROPFILE
 echo "CONFIG_SHADOW_PROFILE=0" >> $PROPFILE
 echo "" >> $PROPFILE
@@ -187,6 +187,20 @@ case $PROFILE in
 	echo "	echo 40 > /proc/sys/vm/vfs_cache_pressure" >> $POSTBOOTFILE
 	echo "	echo 1 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk" >> $POSTBOOTFILE
 	echo "	echo 10 > /sys/class/thermal/thermal_message/sconfig" >> $POSTBOOTFILE
+	;;
+    3)
+	echo "	echo 576000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
+	echo "	echo 825600 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
+	echo "	echo 1766400 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
+	echo "	echo 1766400 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
+	echo "	echo 0 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus" >> $POSTBOOTFILE
+	echo "	echo \"0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0\" > /sys/module/cpu_boost/parameters/input_boost_freq" >> $POSTBOOTFILE
+	echo "	echo 250 > /sys/module/cpu_boost/parameters/input_boost_ms" >> $POSTBOOTFILE
+	echo "	echo 5 > /sys/module/cpu_boost/parameters/dynamic_stune_boost" >> $POSTBOOTFILE
+	echo "	echo 60 > /proc/sys/vm/swappiness" >> $POSTBOOTFILE
+	echo "	echo 100 > /proc/sys/vm/vfs_cache_pressure" >> $POSTBOOTFILE
+	echo "	echo 0 > /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk" >> $POSTBOOTFILE
+	echo "	echo 11 > /sys/class/thermal/thermal_message/sconfig" >> $POSTBOOTFILE
 	;;
     *)
 	echo "	echo 300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
@@ -388,6 +402,25 @@ case $PROFILE in
 	echo "write /proc/sys/vm/vfs_cache_pressure 40" >> $CONFIGFILE
 	echo "write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1" >> $CONFIGFILE
 	echo "write /sys/class/thermal/thermal_message/sconfig 10" >> $CONFIGFILE
+        ;;
+    3)
+	echo "# Profile - BattPerf" >> $CONFIGFILE
+	echo "" >> $CONFIGFILE
+	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1766400" >> $CONFIGFILE
+	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 1766400" >> $CONFIGFILE
+	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 576000" >> $CONFIGFILE
+	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 825600" >> $CONFIGFILE
+	echo "write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 0" >> $CONFIGFILE
+	echo "write /sys/module/cpu_boost/parameters/input_boost_freq \"0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0\"" >> $CONFIGFILE
+	echo "write /sys/module/cpu_boost/parameters/input_boost_ms 250" >> $CONFIGFILE
+	echo "write /sys/module/cpu_boost/parameters/dynamic_stune_boost 5" >> $CONFIGFILE
+	echo "write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz" >> $CONFIGFILE
+	echo "write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 1" >> $CONFIGFILE
+	echo "write /sys/class/kgsl/kgsl-3d0/max_gpuclk 710000000" >> $CONFIGFILE
+	echo "write /proc/sys/vm/swappiness 60" >> $CONFIGFILE
+	echo "write /proc/sys/vm/vfs_cache_pressure 100" >> $CONFIGFILE
+	echo "write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 0" >> $CONFIGFILE
+	echo "write /sys/class/thermal/thermal_message/sconfig 11" >> $CONFIGFILE
         ;;
     *)
 	echo "# Profile - Balanced" >> $CONFIGFILE
