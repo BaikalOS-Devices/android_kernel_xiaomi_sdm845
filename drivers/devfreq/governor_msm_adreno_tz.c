@@ -398,8 +398,6 @@ static int lvl_divider_map_3[] = {10,1,1,1,1,14,12    ,1,1};
 
 #endif
 
-static int uci_adrenoboost = 1;
-
 static inline int devfreq_get_freq_level(struct devfreq *devfreq,
 	unsigned long freq)
 {
