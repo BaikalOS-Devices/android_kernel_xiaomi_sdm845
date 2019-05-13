@@ -375,10 +375,10 @@ static int32_t afe_callback(struct apr_client_data *data, void *priv)
 						 data->payload_size))
 				return -EINVAL;
 		}
-                if (afe_token_is_valid(data->token))
-                        wake_up(&this_afe.wait[data->token]);
-                else
-                        return -EINVAL;
+		if (afe_token_is_valid(data->token))
+			wake_up(&this_afe.wait[data->token]);
+		else
+			return -EINVAL;
 	} else if (data->opcode == ULTRASOUND_OPCODE) {
 		if (data->payload != NULL)
 			elliptic_process_apr_payload(data->payload);
