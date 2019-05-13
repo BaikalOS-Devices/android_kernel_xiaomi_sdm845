@@ -15,6 +15,7 @@ DEVICE="beryllium"
 VERSION="pie"
 ARCH="arm64"
 CROSS_COMPILE="/home/${USER}/toolchain/gcc-linaro-7.4.1/bin/aarch64-linux-gnu-"
+CROSS_COMPILE_ARM32="/home/${USER}/toolchain/gcc-linaro-7.4.1-32/bin/arm-linux-gnueabi-"
 CC="/home/${USER}/toolchain/aospc/bin/clang"
 CLANG_TRIPLE="aarch64-linux-gnu-"
 CCACHE_DIR="~/.ccache"
@@ -46,6 +47,7 @@ if [ "$1" = "gcc" ]; then
     export KBUILD_BUILD_USER="${BUILD_USER}"
     export ARCH="${ARCH}"
     export CROSS_COMPILE="${CROSS_COMPILE}"
+    export CROSS_COMPILE_ARM32="${CROSS_COMPILE_ARM32}"
     export USE_CCACHE=1
     export CCACHE_DIR="${CCACHE_DIR}"
     ccache -M 50G
@@ -63,6 +65,7 @@ else
                       ARCH="${ARCH}" \
                       CC="${CC}" \
                       CLANG_TRIPLE="${CLANG_TRIPLE}" \
+		      CROSS_COMPILE_ARM32="${CROSS_COMPILE_ARM32}" \
                       CROSS_COMPILE="${CROSS_COMPILE}" &>buildlog.txt & pid=$!
 fi
   spin[0]="$gre-"
