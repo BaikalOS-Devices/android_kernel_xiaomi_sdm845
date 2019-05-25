@@ -189,7 +189,7 @@ case $PROFILE in
 	echo "	echo 10 > /sys/class/thermal/thermal_message/sconfig" >> $POSTBOOTFILE
 	;;
     3)
-	echo "	echo 576000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
+	echo "	echo 300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
 	echo "	echo 825600 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq" >> $POSTBOOTFILE
 	echo "	echo 1766400 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
 	echo "	echo 1766400 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq" >> $POSTBOOTFILE
@@ -408,7 +408,7 @@ case $PROFILE in
 	echo "" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1766400" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 1766400" >> $CONFIGFILE
-	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 576000" >> $CONFIGFILE
+	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 300000" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 825600" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 0" >> $CONFIGFILE
 	echo "write /sys/module/cpu_boost/parameters/input_boost_freq \"0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0\"" >> $CONFIGFILE

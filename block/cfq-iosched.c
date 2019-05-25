@@ -309,7 +309,10 @@ struct cfq_group {
 	struct cfq_queue *async_idle_cfqq;
 
 	u64 group_idle;
+<<<<<<< HEAD
 
+=======
+>>>>>>> shadow/pie
 };
 
 struct cfq_io_cq {
@@ -819,6 +822,17 @@ static inline u64 get_group_idle(struct cfq_data *cfqd)
 }
 
 #endif	/* CONFIG_CFQ_GROUP_IOSCHED */
+
+static inline u64 get_group_idle(struct cfq_data *cfqd)
+{
+#ifdef CONFIG_CFQ_GROUP_IOSCHED
+	struct cfq_queue *cfqq = cfqd->active_queue;
+
+	if (cfqq && cfqq->cfqg)
+		return cfqq->cfqg->group_idle;
+#endif
+	return cfqd->cfq_group_idle;
+}
 
 #define cfq_log(cfqd, fmt, args...)	\
 	blk_add_trace_msg((cfqd)->queue, "cfq " fmt, ##args)
