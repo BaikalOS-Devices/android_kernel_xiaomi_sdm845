@@ -582,11 +582,6 @@ struct cam_flush_dev_cmd {
 	int64_t        req_id;
 };
 
-struct cam_luma_data {
-	uint32_t        expo;
-	uint32_t        gain;
-};
-
 /**
  * struct cam_ubwc_config - UBWC Configuration Payload
  *
@@ -634,6 +629,11 @@ struct cam_cmd_mem_regions {
 	uint32_t version;
 	uint32_t num_regions;
 	struct cam_cmd_mem_region_info map_info_array[1];
+};
+
+struct cam_luma_data {
+	uint32_t        expo;
+	uint32_t        gain;
 };
 
 #endif /* __UAPI_CAM_DEFS_H__ */

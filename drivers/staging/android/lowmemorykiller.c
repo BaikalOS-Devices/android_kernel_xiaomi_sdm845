@@ -49,6 +49,9 @@
 #include <linux/cpuset.h>
 #include <linux/vmpressure.h>
 #include <linux/freezer.h>
+#include <linux/circ_buf.h>
+#include <linux/proc_fs.h>
+#include <linux/slab.h>
 
 #define CREATE_TRACE_POINTS
 #include <trace/events/almk.h>
@@ -785,8 +788,8 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 
 		lowmem_deathpending_timeout = jiffies + HZ;
 		rem += selected_tasksize;
-                handle_lmk_event(selected, min_score_adj);
 
+		handle_lmk_event(selected, min_score_adj);
 		rcu_read_unlock();
 		/* give the system time to free up the memory */
 		msleep_interruptible(20);

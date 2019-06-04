@@ -77,8 +77,6 @@
 #include "./../ndt_core.h"
 #endif
 
-#define PROC_SYMLINK_PATH "touchpanel"
-
 /**
  * Event handler installer helpers
  */
@@ -2300,35 +2298,19 @@ static ssize_t fts_wake_gesture_store(struct device *dev,
 					struct device_attribute *attr,
 					const char *buf, size_t count)
 {
-	unsigned int input = 0;
-	static const char *fts_gesture_on = "01 20";
-	static const char *fts_gesture_off = "00 20";
 	struct fts_ts_info *info = dev_get_drvdata(dev);
-	char *gesture_result;
-	int size = 6 * 2 + 1;
-	if (sscanf(buf, "%u", &input) != 1)
-		return -EINVAL;
 
-	if (input == 1) {
-		gesture_result = (u8 *) kzalloc(size, GFP_KERNEL);
-		fts_gesture_mask_store(info->dev, NULL,
-				fts_gesture_on, strlen(fts_gesture_on));
-		fts_gesture_mask_show(info->dev, NULL,
-				gesture_result);
-	} else {
-		gesture_result = (u8 *) kzalloc(size, GFP_KERNEL);
-		fts_gesture_mask_store(info->dev, NULL,
-				fts_gesture_off, strlen(fts_gesture_off));
-		fts_gesture_mask_show(info->dev, NULL,
-				gesture_result);
-	}
+	return snprintf(buf, TSP_BUF_SIZE, "%d\n", info->fod_status);
+}
 
-	if (strncmp("{ 00000000 }", gesture_result, size - 1))
-		logError(1, "%s %s: store gesture mask error\n", tag, __func__);
+static ssize_t fts_fod_status_store(struct device *dev,
+				     struct device_attribute *attr,
+				     const char *buf, size_t count)
+{
+	struct fts_ts_info *info = dev_get_drvdata(dev);
 
-	kfree(gesture_result);
-	gesture_result = NULL;
-
+	logError(1, " %s %s,buf:%s,count:%zu\n", tag, __func__, buf, count);
+	sscanf(buf, "%u", &info->fod_status);
 	return count;
 }
 
@@ -2395,8 +2377,6 @@ static DEVICE_ATTR(grip_enable, (S_IRUGO | S_IWUSR | S_IWGRP),
 		   fts_grip_enable_show, fts_grip_enable_store);
 static DEVICE_ATTR(grip_area, (S_IRUGO | S_IWUSR | S_IWGRP),
 		   fts_grip_area_show, fts_grip_area_store);
-static DEVICE_ATTR(wake_gesture, (S_IRUGO | S_IWUSR),
-		   fts_gesture_mask_show, fts_wake_gesture_store);
 
 static struct attribute *fts_attr_group[] = {
 	&dev_attr_fwupdate.attr,
@@ -4475,34 +4455,6 @@ static void fts_switch_mode_work(struct work_struct *work)
 	}
 }
 
-static ssize_t fts_input_symlink(struct fts_ts_info *info) {
-	char *driver_path;
-	int ret = 0;
-
-	if (info->input_proc) {
-		proc_remove(info->input_proc);
-		info->input_proc = NULL;
-	}
-
-	driver_path = kzalloc(PATH_MAX, GFP_KERNEL);
-	if (!driver_path) {
-		return -ENOMEM;
-	}
-
-	sprintf(driver_path, "/sys%s",
-			kobject_get_path(&info->input_dev->dev.kobj, GFP_KERNEL));
-
-	pr_info("%s: driver_path=%s\n", __func__, driver_path);
-	info->input_proc = proc_symlink(PROC_SYMLINK_PATH, NULL, driver_path);
-	if (!info->input_proc) {
-		ret = -ENOMEM;
-	}
-
-	kfree(driver_path);
-
-	return ret;
-}
-
 static int fts_input_event(struct input_dev *dev, unsigned int type,
 			   unsigned int code, int value)
 {
@@ -5110,8 +5062,6 @@ static int fts_probe(struct spi_device *client)
 	info->input_dev->event = fts_input_event;
 	input_set_drvdata(info->input_dev, info);
 
-	info->input_proc = NULL;
-
 	__set_bit(EV_SYN, info->input_dev->evbit);
 	__set_bit(EV_KEY, info->input_dev->evbit);
 	__set_bit(EV_ABS, info->input_dev->evbit);
@@ -5192,11 +5142,6 @@ static int fts_probe(struct spi_device *client)
 		goto ProbeErrorExit_5_1;
 	}
 
-	retval = fts_input_symlink(info);
-	if (retval < 0) {
-		logError(1, "%s ERROR: fts_ts_info is NULL\n", tag);
-	}
-
 	skip_5_1 = 1;
 	/* track slots */
 	info->touch_id = 0;
@@ -5269,7 +5214,7 @@ static int fts_probe(struct spi_device *client)
 	logError(0, "%s SET Device File Nodes: \n", tag);
 	/* sysfs stuff */
 	info->attrs.attrs = fts_attr_group;
-	error = sysfs_create_group(&info->input_dev->dev.kobj, &info->attrs);
+	error = sysfs_create_group(&client->dev.kobj, &info->attrs);
 	if (error) {
 		logError(1, "%s ERROR: Cannot create sysfs structure!\n", tag);
 		error = -ENODEV;
