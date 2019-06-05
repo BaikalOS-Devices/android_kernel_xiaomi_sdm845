@@ -28,6 +28,9 @@ COLPROF=$(grep "CONFIG_SHADOW_COLPROF" "$PROPFILE" | cut -d '=' -f2)
 USBFC=$(grep "CONFIG_SHADOW_USBFC" "$PROPFILE" | cut -d '=' -f2)
 DT2W=$(grep "CONFIG_SHADOW_DT2W" "$PROPFILE" | cut -d '=' -f2)
 ZRAM=$(grep "CONFIG_SHADOW_ZRAM" "$PROPFILE" | cut -d '=' -f2)
+KLAPSE=$(grep "CONFIG_SHADOW_KLAPSE" "$PROPFILE" | cut -d '=' -f2)
+DIM=$(grep "CONFIG_SHADOW_DIM" "$PROPFILE" | cut -d '=' -f2)
+
 
 else
 
@@ -37,6 +40,8 @@ COLPROF=0
 USBFC=0
 DT2W=0
 ZRAM=1
+KLAPSE=0
+DIM=0
 
 echo "# Shadow Kernel Properties" >> $PROPFILE
 echo "" >> $PROPFILE
@@ -79,7 +84,18 @@ echo "" >> $PROPFILE
 echo "CONFIG_SHADOW_ZRAM=1" >> $PROPFILE
 echo "" >> $PROPFILE
 echo "" >> $PROPFILE
-
+echo "# K-Lapse - A kernel level livedisplay module" >> $PROPFILE
+echo "# 0 - Off, 1 - On (Brightness Mode)" >> $PROPFILE
+echo "" >> $PROPFILE
+echo "CONFIG_SHADOW_KLAPSE=0" >> $PROPFILE
+echo "" >> $PROPFILE
+echo "" >> $PROPFILE
+echo "# Dimmer - Makes your display appear as if it is at a lesser brightness level than it actually is at" >> $PROPFILE
+echo "# Values - 10,20,30,40,50,60,70,80,90,100 : 10 - Lowest Intensity, 100/0 - Default" >> $PROPFILE
+echo "" >> $PROPFILE
+echo "CONFIG_SHADOW_DIM=0" >> $PROPFILE
+echo "" >> $PROPFILE
+echo "" >> $PROPFILE
 
 fi
 
@@ -525,6 +541,52 @@ echo "system/bin/swapoff /dev/block/zram0" >> $CONFIGFILE
 echo "" >> $CONFIGFILE
 echo "" >> $CONFIGFILE
 fi
+
+echo "# K-Lapse" >> $CONFIGFILE
+echo "" >> $CONFIGFILE
+if [ $KLAPSE = 1 ]; then
+echo "write /sys/module/klapse/parameters/enabled_mode 2" >> $CONFIGFILE
+else
+echo "write /sys/module/klapse/parameters/enabled_mode 0" >> $CONFIGFILE
+fi
+echo "" >> $CONFIGFILE
+echo "" >> $CONFIGFILE
+
+echo "# Dimmer" >> $CONFIGFILE
+echo "" >> $CONFIGFILE
+case $DIM in
+    10)
+	echo "write /sys/module/klapse/parameters/dimmer_factor 10" >> $CONFIGFILE
+	;;
+    20)
+	echo "write /sys/module/klapse/parameters/dimmer_factor 20" >> $CONFIGFILE
+	;;
+    30)
+	echo "write /sys/module/klapse/parameters/dimmer_factor 30" >> $CONFIGFILE
+	;;
+    40)
+	echo "write /sys/module/klapse/parameters/dimmer_factor 40" >> $CONFIGFILE
+	;;
+    50)
+	echo "write /sys/module/klapse/parameters/dimmer_factor 50" >> $CONFIGFILE
+	;;
+    60)
+	echo "write /sys/module/klapse/parameters/dimmer_factor 60" >> $CONFIGFILE
+	;;
+    70)
+	echo "write /sys/module/klapse/parameters/dimmer_factor 70" >> $CONFIGFILE
+	;;
+    80)
+	echo "write /sys/module/klapse/parameters/dimmer_factor 80" >> $CONFIGFILE
+	;;
+    90)
+	echo "write /sys/module/klapse/parameters/dimmer_factor 90" >> $CONFIGFILE
+	;;
+    *)
+	echo "write /sys/module/klapse/parameters/dimmer_factor 100" >> $CONFIGFILE
+esac
+echo "" >> $CONFIGFILE
+echo "" >> $CONFIGFILE
 
 echo "# Set the default IRQ affinity to the silver cluster." >> $CONFIGFILE
 echo "write /proc/irq/default_smp_affinity f" >> $CONFIGFILE
