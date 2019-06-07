@@ -423,16 +423,34 @@ lim_check_and_add_bss_description(tpAniSirGlobal mac_ctx,
 				if (freq_diff <= 10)
 					drop_bcn_prb_rsp = false;
 			}
-			/* Drop beacon, if CH do not match, Drop */
-			if (!fProbeRsp && drop_bcn_prb_rsp) {
-				pe_debug("Beacon Rsp dropped. Channel in BD: %d Channel in beacon: %d",
+
+			qdf_ctx = cds_get_context(QDF_MODULE_ID_QDF_DEVICE);
+			if (!qdf_ctx) {
+				pe_err("qdf_ctx is NULL");
+				return;
+			}
+			pld_get_wlan_unsafe_channel(qdf_ctx->dev, unsafe_chan,
+						    &unsafe_chan_cnt,
+						    sizeof(unsafe_chan));
+			if (mac_ctx->roam.configParam.sta_roam_policy.
+				skip_unsafe_channels && unsafe_chan_cnt) {
+				for (cnt = 0; cnt < unsafe_chan_cnt; cnt++) {
+					if (unsafe_chan[cnt] ==
+					    rx_chan_in_beacon) {
+						is_unsafe_chan = true;
+						break;
+					}
+				}
+			}
+
+			/* Drop beacon/Probe, if CH do not match, Drop */
+			if (drop_bcn_prb_rsp || is_unsafe_chan) {
+				pe_debug("Beacon/Probe Rsp dropped. Channel in BD: %d Channel in beacon: %d",
 					rx_chan_bd, rx_chan_in_beacon);
 				return;
 			}
-			/* Probe RSP, do not drop */
 			else {
-				if (!mac_ctx->allow_adj_ch_bcn)
-					flags |= WLAN_SKIP_RSSI_UPDATE;
+				flags |= WLAN_SKIP_RSSI_UPDATE;
 				pe_debug("SSID: %s CH in ProbeRsp: %d CH in BD: %d mismatch Do Not Drop",
 					bpr->ssId.ssId, rx_chan_in_beacon,
 					WMA_GET_RX_CH(rx_packet_info));
