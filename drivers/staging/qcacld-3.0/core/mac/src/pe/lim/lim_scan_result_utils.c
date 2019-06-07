@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2018 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2019 The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -380,6 +380,12 @@ lim_check_and_add_bss_description(tpAniSirGlobal mac_ctx,
 
 	tSirMacAddr bssid_zero =  {0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
 	tpSirMacDataHdr3a hdr;
+
+	uint16_t  unsafe_chan[NUM_CHANNELS];
+	uint16_t  unsafe_chan_cnt = 0;
+	uint16_t  cnt = 0;
+	bool      is_unsafe_chan = false;
+	qdf_device_t qdf_ctx;
 
 	hdr = WMA_GET_RX_MPDUHEADER3A((uint8_t *) rx_packet_info);
 

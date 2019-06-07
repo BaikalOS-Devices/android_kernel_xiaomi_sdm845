@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2018 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2011-2019 The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -2118,6 +2118,8 @@ lim_process_mlm_set_keys_req(tpAniSirGlobal mac_ctx, uint32_t *msg_buf)
 				mlm_set_keys_req->sessionId);
 	if (NULL == session) {
 		pe_err("session does not exist for given sessionId");
+		qdf_mem_zero(mlm_set_keys_req->key, sizeof(tSirKeys));
+		mlm_set_keys_req->numKeys = 0;
 		qdf_mem_free(mlm_set_keys_req);
 		mac_ctx->lim.gpLimMlmSetKeysReq = NULL;
 		return;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2019 The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -2847,6 +2847,7 @@ void lim_process_mlm_set_bss_key_rsp(tpAniSirGlobal mac_ctx,
 		set_key_cnf.resultCode = result_status;
 	}
 
+	qdf_mem_zero(msg->bodyptr, sizeof(tSetBssKeyParams));
 	qdf_mem_free(msg->bodyptr);
 	msg->bodyptr = NULL;
 	/* Restore MLME state */
