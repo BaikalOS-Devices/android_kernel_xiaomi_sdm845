@@ -315,44 +315,46 @@
 };
 
 &pmi8998_charger {
-	qcom,usb-icl-ua = <3400000>;
-	qcom,fcc-max-ua = <3400000>;
+	qcom,usb-icl-ua = <3600000>;
+	qcom,fcc-max-ua = <3600000>;
+	qcom,dc-icl-ua = <950000>;
 	qcom,fcc-low-temp-delta = <2520000>;
 	qcom,fcc-hot-temp-delta = <1400000>;
 	qcom,fcc-cool-temp-delta = <1960000>;
 	qcom,auto-recharge-soc;
-        qcom,sw-jeita-enable;
+    qcom,sw-jeita-enable;
+
 	qcom,thermal-mitigation
 				= <1800000 1600000 1400000 1200000 1000000 1000000 1000000>;
 	qcom,thermal-mitigation-dcp
 				= <1800000 1800000 1800000 1800000 1800000 1800000 1800000
-				   1800000 1800000 1800000 1800000 1800000 1600000 1400000
+				   1800000 1800000 1800000 1800000 1800000 1800000 1400000
 				   1200000 1000000>;
 	qcom,thermal-mitigation-qc3
-				= <3400000 3400000 3400000 3400000 3400000 3400000 3400000
-				   3400000 3400000 3400000 3400000 3400000 1600000 1400000
+				= <3600000 3600000 3600000 3600000 3600000 3600000 3600000
+				   3600000 3600000 3600000 3600000 3600000 3600000 1400000
 				   1200000 1000000>;
 	qcom,thermal-mitigation-qc2
-				= <3400000 3400000 3400000 3400000 3400000 3400000 3400000
-				   3400000 3400000 3400000 3400000 3400000 1600000 1400000
+				= <3600000 3600000 3600000 3600000 3600000 3600000 3600000
+				   3600000 3600000 3600000 3600000 3600000 3600000 1400000
 				   1200000 1000000>;
 	qcom,thermal-mitigation-pd-base
-				= <3400000 2800000 2600000 2400000 2200000 2000000 1800000
-				1600000 1600000 1400000 1200000 1100000 1000000 900000
-				752500 525000>;
+				= <3600000 3600000 3600000 3600000 3600000 3600000 3600000
+				   3600000 3600000 3600000 3600000 3400000 3000000 1400000
+				   752500 525000>;
 };
 
 &pmi8998_fg {
 	qcom,fg-force-load-profile;
 	qcom,fg-sys-term-current = <(-300)>;
-	qcom,fg-chg-term-current = <200>;
+	qcom,fg-chg-term-current = <100>;
 	qcom,fg-auto-recharge-soc;
-	qcom,fg-recharge-soc-thr = <99>;
-	qcom,fg-cutoff-voltage = <3200>;
+	qcom,fg-recharge-soc-thr = <98>;
+	qcom,fg-cutoff-voltage = <3110>;
 	qcom,fg-cutoff-current = <100>;
 	qcom,fg-empty-voltage = <3100>;
 	qcom,fg-jeita-hyst-temp = <2>;
-	qcom,fg-jeita-thresholds = <0 15 42 55>;
+	qcom,fg-jeita-thresholds = <0 15 45 60>;
 	qcom,fg-esr-clamp-mohms = <60>;
 	qcom,fg-batt-temp-delta = <6>;
 	qcom,battery-data = <&mtp_batterydata>;
