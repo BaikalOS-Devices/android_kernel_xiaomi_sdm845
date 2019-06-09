@@ -265,6 +265,7 @@ struct fts_ts_info {
 #ifdef CONFIG_TOUCHSCREEN_ST_DEBUG_FS
 	struct dentry *debugfs;
 #endif
+	struct proc_dir_entry *input_proc;
 };
 
 struct fts_mode_switch {
