@@ -2294,26 +2294,6 @@ static ssize_t fts_fod_status_store(struct device *dev,
 	return count;
 }
 
-static ssize_t fts_wake_gesture_store(struct device *dev,
-					struct device_attribute *attr,
-					const char *buf, size_t count)
-{
-	struct fts_ts_info *info = dev_get_drvdata(dev);
-
-	return snprintf(buf, TSP_BUF_SIZE, "%d\n", info->fod_status);
-}
-
-static ssize_t fts_fod_status_store(struct device *dev,
-				     struct device_attribute *attr,
-				     const char *buf, size_t count)
-{
-	struct fts_ts_info *info = dev_get_drvdata(dev);
-
-	logError(1, " %s %s,buf:%s,count:%zu\n", tag, __func__, buf, count);
-	sscanf(buf, "%u", &info->fod_status);
-	return count;
-}
-
 static DEVICE_ATTR(fts_lockdown, (S_IRUGO | S_IWUSR | S_IWGRP),
 		   fts_lockdown_show, fts_lockdown_store);
 static DEVICE_ATTR(fwupdate, (S_IRUGO | S_IWUSR | S_IWGRP), fts_fwupdate_show,
@@ -2421,7 +2401,6 @@ static struct attribute *fts_attr_group[] = {
 	&dev_attr_doze_time.attr,
 	&dev_attr_grip_enable.attr,
 	&dev_attr_grip_area.attr,
-	&dev_attr_wake_gesture.attr,
 	NULL,
 };
 
