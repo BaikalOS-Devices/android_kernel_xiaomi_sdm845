@@ -207,7 +207,9 @@ int sched_boost_handler(struct ctl_table *table, int write,
 	mutex_lock(&boost_mutex);
 
 	old_val = *data;
-	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
+	//ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
+	ret = 0;
+	write = 0;
 
 	if (ret || !write)
 		goto done;
