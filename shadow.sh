@@ -183,13 +183,6 @@ function tgram(){
 
 	curl -s -X POST https://api.telegram.org/bot${BOT_API}/sendSticker -d chat_id="${TCHANNEL}" -d sticker="CAADBQADAgADMSh7G43ckmaE_h0aAg" 1> /dev/null
 
-	echo -e "$blue\n Sending Files to Telegram Group...\n $white"
-
-	curl -s -X POST https://api.telegram.org/bot${BOT_API}/forwardMessage -d chat_id="${TGROUP}" -d from_chat_id="${TCHANNEL}" -d message_id="${file_id}" 1> /dev/null
-
-	curl -s -X POST https://api.telegram.org/bot${BOT_API}/forwardMessage -d chat_id="${TGROUP}" -d from_chat_id="${TCHANNEL}" -d message_id="${ch_id}" 1> /dev/null
-
-
     else
 	echo -e "$red << Telegram import variables not found.. >>$white"
     fi
