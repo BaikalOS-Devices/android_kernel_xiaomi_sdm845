@@ -2441,6 +2441,7 @@ static struct attribute *fts_attr_group[] = {
 	&dev_attr_doze_time.attr,
 	&dev_attr_grip_enable.attr,
 	&dev_attr_grip_area.attr,
+	&dev_attr_wake_gesture.attr,
 	NULL,
 };
 
