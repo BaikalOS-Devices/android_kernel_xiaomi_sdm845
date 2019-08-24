@@ -1234,7 +1234,7 @@ static int qseecom_register_listener(struct qseecom_dev_handle *data,
 			pr_debug("register %d has to wait\n",
 				rcvd_lstnr.listener_id);
 			mutex_unlock(&listener_access_lock);
-			ret = wait_event_freezable(
+			ret = wait_event_interruptible(
 				qseecom.register_lsnr_pending_wq,
 				list_empty(
 				&qseecom.unregister_lsnr_pending_list_head));
@@ -1417,7 +1417,7 @@ static void __wakeup_unregister_listener_kthread(void)
 static int __qseecom_unregister_listener_kthread_func(void *data)
 {
 	while (!kthread_should_stop()) {
-		wait_event_freezable(
+		wait_event_interruptible(
 			qseecom.unregister_lsnr_kthread_wq,
 			atomic_read(&qseecom.unregister_lsnr_kthread_state)
 				== LSNR_UNREG_KT_WAKEUP);
