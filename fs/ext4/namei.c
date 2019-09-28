@@ -1350,7 +1350,7 @@ static struct buffer_head * ext4_find_entry (struct inode *dir,
 				   buffer */
 	int num = 0;
 	ext4_lblk_t  nblocks;
-	int i, namelen, retval;
+	int i, namelen;
 	struct ext4_filename fname;
 
 	*res_dir = NULL;
