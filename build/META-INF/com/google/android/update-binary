@@ -75,15 +75,16 @@ restore_env() {
   test "$savedpre" && export LD_PRELOAD="$savedpre";
   umount_all;
   ($bb mv -f /system_link /system;
-  $bb mv -f /system_root_link /system_root) 2>/dev/null;
+  $bb mv -f /system_root_link /system_root;
+  $bb umount -l /dev/random) 2>/dev/null;
 }
 abort() {
   ui_print "$@";
   debugging;
+  restore_env;
   if [ ! -f anykernel.sh -o "$(file_getprop anykernel.sh do.cleanuponabort 2>/dev/null)" == 1 ]; then
     cleanup;
   fi;
-  restore_env;
   exit 1;
 }
 
@@ -136,6 +137,7 @@ ui_print " ___/ / / / / /_/ / /_/ / /_/ / |/ |/ / ";
 ui_print "/____/_/ /_/\__,_/\__,_/\____/|__/|__/  ";
 ui_print " " " ";
 
+$BOOTMODE || $bb mount -o bind /dev/urandom /dev/random;
 umount_all;
 setup_mountpoint $ANDROID_ROOT;
 if ! is_mounted $ANDROID_ROOT; then
@@ -286,6 +288,7 @@ if [ "$(file_getprop anykernel.sh do.modules)" == 1 ]; then
 fi;
 
 debugging;
+restore_env;
 
 if [ "$(file_getprop anykernel.sh do.cleanup)" == 1 ]; then
   cleanup;

@@ -7,12 +7,12 @@
 
 # Kernel Config Variables
 
-KERNEL_DIR="${PWD}"
-KERNEL="shadow"
+KERNEL_DIR=${PWD}
+KERNEL=$(echo ${PWD##*/} | cut -d'-' -f1)
 BUILD_USER="energyspear17"
 BUILD_HOST="gcp"
-DEVICE="beryllium"
-VERSION="pie"
+DEVICE=$(echo ${PWD##*/} | cut -d'-' -f2)
+VERSION=$(git branch | grep \* | cut -d ' ' -f2)
 ARCH="arm64"
 CROSS_COMPILE="/home/${USER}/toolchain/gcc-linaro-7.4.1/bin/aarch64-linux-gnu-"
 CROSS_COMPILE_ARM32="/home/${USER}/toolchain/gcc-linaro-7.4.1-32/bin/arm-linux-gnueabi-"
@@ -36,8 +36,8 @@ zimage="${KERNEL_DIR}/out/arch/arm64/boot/Image"
 time=$(date +"%d-%m-%y-%T")
 date=$(date +"%d-%m-%y")
 build_type="gcc"
-v=$(grep "CONFIG_LOCALVERSION=" "${KERNEL_DIR}/arch/arm64/configs/${KERNEL}_defconfig" | cut -d- -f3- | cut -d\" -f1)
-zip_name="${KERNEL}-${DEVICE}-${VERSION}-v${v}-${date}.zip"
+v=$(grep "CONFIG_LOCALVERSION=" "${KERNEL_DIR}/arch/arm64/configs/${KERNEL,,}_defconfig" | cut -d- -f3- | cut -d\" -f1)
+zip_name="${KERNEL,,}-${DEVICE,,}-${VERSION}-v${v}-${date}.zip"
 
 function build() {
 
@@ -51,7 +51,7 @@ if [ "$1" = "gcc" ]; then
     export USE_CCACHE=1
     export CCACHE_DIR="${CCACHE_DIR}"
     ccache -M 50G
-    make O="${OUT}" "${KERNEL}_defconfig"
+    make O="${OUT}" "${KERNEL,,}_defconfig"
     make O="${OUT}" -j$(nproc --all) &>buildlog.txt & pid=$!
 else
     echo -e "$yellow Building Kernel with clang... \n $white"
@@ -60,7 +60,7 @@ else
     export USE_CCACHE=1
     export CCACHE_DIR="${CCACHE_DIR}"
     ccache -M 50G
-    make O="${OUT}" ARCH="${ARCH}" "${KERNEL}_defconfig"
+    make O="${OUT}" ARCH="${ARCH}" "${KERNEL,,}_defconfig"
     make -j$(nproc --all) O="${OUT}" \
                       ARCH="${ARCH}" \
                       CC="${CC}" \
@@ -107,11 +107,11 @@ function menuconfig() {
 echo -e "$blue Displaying Config Menu... \n$white"
 
 export ARCH="${ARCH}"
-make "${KERNEL}_defconfig"
+make "${KERNEL,,}_defconfig"
 make menuconfig
 
-if [ -f "${KERNEL}_defconfig" ]; then
-mv ${KERNEL}_defconfig arch/arm64/configs/${KERNEL}_defconfig
+if [ -f "${KERNEL,,}_defconfig" ]; then
+mv ${KERNEL,,}_defconfig arch/arm64/configs/${KERNEL,,}_defconfig
 echo -e "$gre\n Configuration saved...\n $white"
 else
 echo -e "$yellow\n No defconfig saved from menuconfig...\n $white"

@@ -85,7 +85,7 @@ echo "CONFIG_SHADOW_ZRAM=1" >> $PROPFILE
 echo "" >> $PROPFILE
 echo "" >> $PROPFILE
 echo "# K-Lapse - A kernel level livedisplay module" >> $PROPFILE
-echo "# 0 - Off, 1 - On (Brightness Mode)" >> $PROPFILE
+echo "# 0 - Off, 1 - On (Night Mode), 2 - On (Brightness Mode)" >> $PROPFILE
 echo "" >> $PROPFILE
 echo "CONFIG_SHADOW_KLAPSE=0" >> $PROPFILE
 echo "" >> $PROPFILE
@@ -393,7 +393,7 @@ case $PROFILE in
 	echo "write /sys/module/cpu_boost/parameters/input_boost_ms 250" >> $CONFIGFILE
 	echo "write /sys/module/cpu_boost/parameters/dynamic_stune_boost 5" >> $CONFIGFILE
 	echo "write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz" >> $CONFIGFILE
-	echo "write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 1" >> $CONFIGFILE
+	echo "write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 2" >> $CONFIGFILE
 	echo "write /sys/class/kgsl/kgsl-3d0/max_gpuclk 710000000" >> $CONFIGFILE
 	echo "write /proc/sys/vm/swappiness 60" >> $CONFIGFILE
 	echo "write /proc/sys/vm/vfs_cache_pressure 100" >> $CONFIGFILE
@@ -424,18 +424,18 @@ case $PROFILE in
 	echo "" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq 1766400" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_max_freq 1766400" >> $CONFIGFILE
-	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 300000" >> $CONFIGFILE
+	echo "write /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq 576000" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq 825600" >> $CONFIGFILE
 	echo "write /sys/devices/system/cpu/cpu4/core_ctl/min_cpus 0" >> $CONFIGFILE
 	echo "write /sys/module/cpu_boost/parameters/input_boost_freq \"0:0 1:0 2:0 3:0 4:0 5:0 6:0 7:0\"" >> $CONFIGFILE
-	echo "write /sys/module/cpu_boost/parameters/input_boost_ms 250" >> $CONFIGFILE
-	echo "write /sys/module/cpu_boost/parameters/dynamic_stune_boost 5" >> $CONFIGFILE
+	echo "write /sys/module/cpu_boost/parameters/input_boost_ms 64" >> $CONFIGFILE
+	echo "write /sys/module/cpu_boost/parameters/dynamic_stune_boost 3" >> $CONFIGFILE
 	echo "write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz" >> $CONFIGFILE
 	echo "write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 1" >> $CONFIGFILE
 	echo "write /sys/class/kgsl/kgsl-3d0/max_gpuclk 710000000" >> $CONFIGFILE
 	echo "write /proc/sys/vm/swappiness 60" >> $CONFIGFILE
 	echo "write /proc/sys/vm/vfs_cache_pressure 100" >> $CONFIGFILE
-	echo "write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 0" >> $CONFIGFILE
+	echo "write /sys/module/lowmemorykiller/parameters/enable_adaptive_lmk 1" >> $CONFIGFILE
 	echo "write /sys/class/thermal/thermal_message/sconfig 11" >> $CONFIGFILE
         ;;
     *)
@@ -450,7 +450,7 @@ case $PROFILE in
 	echo "write /sys/module/cpu_boost/parameters/input_boost_ms 64" >> $CONFIGFILE
 	echo "write /sys/module/cpu_boost/parameters/dynamic_stune_boost 3" >> $CONFIGFILE
 	echo "write /sys/class/kgsl/kgsl-3d0/devfreq/governor msm-adreno-tz" >> $CONFIGFILE
-	echo "write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 0" >> $CONFIGFILE
+	echo "write /sys/class/kgsl/kgsl-3d0/devfreq/adrenoboost 1" >> $CONFIGFILE
 	echo "write /sys/class/kgsl/kgsl-3d0/max_gpuclk 710000000" >> $CONFIGFILE
 	echo "write /proc/sys/vm/swappiness 40" >> $CONFIGFILE
 	echo "write /proc/sys/vm/vfs_cache_pressure 100" >> $CONFIGFILE
@@ -544,11 +544,16 @@ fi
 
 echo "# K-Lapse" >> $CONFIGFILE
 echo "" >> $CONFIGFILE
-if [ $KLAPSE = 1 ]; then
-echo "write /sys/module/klapse/parameters/enabled_mode 2" >> $CONFIGFILE
-else
-echo "write /sys/module/klapse/parameters/enabled_mode 0" >> $CONFIGFILE
-fi
+case $KLAPSE in
+    1)
+	echo "write /sys/module/klapse/parameters/enabled_mode 1" >> $CONFIGFILE
+	;;
+    2)
+	echo "write /sys/module/klapse/parameters/enabled_mode 2" >> $CONFIGFILE
+	;;
+    *)
+	echo "write /sys/module/klapse/parameters/enabled_mode 0" >> $CONFIGFILE
+esac
 echo "" >> $CONFIGFILE
 echo "" >> $CONFIGFILE
 
