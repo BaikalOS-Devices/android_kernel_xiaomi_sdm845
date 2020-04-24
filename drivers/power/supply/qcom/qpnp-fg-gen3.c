@@ -431,6 +431,8 @@ module_param_named(
 static int fg_restart;
 static bool fg_sram_dump;
 
+#define FG_RATE_LIM_MS (5 * MSEC_PER_SEC)
+
 /* All getters HERE */
 
 #define VOLTAGE_15BIT_MASK	GENMASK(14, 0)
@@ -674,11 +676,8 @@ static int fg_get_battery_temp(struct fg_chip *chip, int *val)
 
 	temp = ((buf[1] & BATT_TEMP_MSB_MASK) << 8) |
 		(buf[0] & BATT_TEMP_LSB_MASK);
-	temp = DIV_ROUND_CLOSEST(temp, 4);
-
-	/* Value is in Kelvin; Convert it to deciDegC */
-	temp = (temp - 273) * 10;
-	*val = temp;
+	/* Value is in 0.25Kelvin; Convert it to deciDegC */
+	*val = DIV_ROUND_CLOSEST((temp - 273*4) * 10, 4);
 	return 0;
 }
 
@@ -1269,7 +1268,7 @@ static int fg_awake_cb(struct votable *votable, void *data, int awake,
 	struct fg_chip *chip = data;
 
 	if (awake)
-		pm_stay_awake(chip->dev);
+		pm_wakeup_event(chip->dev, 500);
 	else
 		pm_relax(chip->dev);
 
@@ -1907,7 +1906,9 @@ static int fg_charge_full_update(struct fg_chip *chip)
 		msoc, bsoc, chip->health, chip->charge_status,
 		chip->charge_full);
 	if (chip->charge_done && !chip->charge_full) {
-		if (msoc >= 99 && chip->health == POWER_SUPPLY_HEALTH_GOOD) {
+		if (msoc >= 99 && (chip->health == POWER_SUPPLY_HEALTH_GOOD
+				|| chip->health == POWER_SUPPLY_HEALTH_COOL
+				|| chip->health == POWER_SUPPLY_HEALTH_WARM)) {
 			fg_dbg(chip, FG_STATUS, "Setting charge_full to true\n");
 			chip->charge_full = true;
 			/*
@@ -2690,7 +2691,7 @@ static void clear_cycle_counter(struct fg_chip *chip)
 	}
 	rc = fg_sram_write(chip, CYCLE_COUNT_WORD, CYCLE_COUNT_OFFSET,
 			(u8 *)&chip->cyc_ctr.count,
-			sizeof(chip->cyc_ctr.count) / sizeof(u8 *),
+			sizeof(chip->cyc_ctr.count) / (sizeof(u8 *)),
 			FG_IMA_DEFAULT);
 	if (rc < 0)
 		pr_err("failed to clear cycle counter rc=%d\n", rc);
@@ -4073,7 +4074,35 @@ static int fg_psy_get_property(struct power_supply *psy,
 				       union power_supply_propval *pval)
 {
 	struct fg_chip *chip = power_supply_get_drvdata(psy);
+	struct fg_saved_data *sd = chip->saved_data + psp;
+	union power_supply_propval typec_sts = { .intval = -1 };
 	int rc = 0;
+
+	switch (psp) {
+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+	case POWER_SUPPLY_PROP_RESISTANCE_ID:
+	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
+	case POWER_SUPPLY_PROP_CYCLE_COUNT_ID:
+	case POWER_SUPPLY_PROP_CHARGE_NOW:
+	case POWER_SUPPLY_PROP_CHARGE_FULL:
+	case POWER_SUPPLY_PROP_SOC_REPORTING_READY:
+		/* These props don't require a fg query; don't ratelimit them */
+		break;
+	default:
+		if (!sd->last_req_expires)
+			break;
+
+		if (usb_psy_initialized(chip))
+			power_supply_get_property(chip->usb_psy,
+				POWER_SUPPLY_PROP_TYPEC_MODE, &typec_sts);
+
+		if (typec_sts.intval == POWER_SUPPLY_TYPEC_NONE &&
+			time_before(jiffies, sd->last_req_expires)) {
+			*pval = sd->val;
+			return 0;
+		}
+		break;
+	}
 
 	switch (psp) {
 	case POWER_SUPPLY_PROP_CAPACITY:
@@ -4207,6 +4236,9 @@ static int fg_psy_get_property(struct power_supply *psy,
 
 	if (rc < 0)
 		return -ENODATA;
+
+	sd->val = *pval;
+	sd->last_req_expires = jiffies + msecs_to_jiffies(FG_RATE_LIM_MS);
 
 	return 0;
 }

@@ -457,11 +457,13 @@ static int smb2_parse_dt(struct smb2 *chip)
 
 	rc = of_property_read_u32(node, "qcom,otg-deglitch-time-ms",
 					&chg->otg_delay_ms);
-	if (rc < 0)
+	if (rc < 0) {
 		chg->otg_delay_ms = OTG_DEFAULT_DEGLITCH_TIME_MS;
 
 	rc = of_property_read_u32(node, "qcom,fcc-low-temp-delta",
 				&chip->dt.jeita_low_cc_delta);
+	}
+
 	if (rc < 0)
 		chip->dt.jeita_low_cc_delta = DEFAULT_CRITICAL_JEITA_CCOMP;
 	chg->jeita_ccomp_low_delta = chip->dt.jeita_low_cc_delta;
@@ -1582,6 +1584,8 @@ static int smb2_batt_prop_is_writeable(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_SW_JEITA_ENABLED:
 	case POWER_SUPPLY_PROP_DIE_HEALTH:
 	case POWER_SUPPLY_PROP_DC_THERMAL_LEVELS:
+	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
 		return 1;
 	default:
 		break;

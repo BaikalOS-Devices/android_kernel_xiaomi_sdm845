@@ -72,6 +72,16 @@ int suid_dumpable = 0;
 static LIST_HEAD(formats);
 static DEFINE_RWLOCK(binfmt_lock);
 
+#define ZYGOTE32_BIN "/system/bin/app_process32"
+#define ZYGOTE64_BIN "/system/bin/app_process64"
+static struct task_struct *zygote32_task;
+static struct task_struct *zygote64_task;
+
+bool task_is_zygote(struct task_struct *task)
+{
+	return task == zygote32_task || task == zygote64_task;
+}
+
 void __register_binfmt(struct linux_binfmt * fmt, int insert)
 {
 	BUG_ON(!fmt);
@@ -1353,7 +1363,7 @@ void setup_new_exec(struct linux_binprm * bprm)
 
 	/* An exec changes our domain. We are no longer part of the thread
 	   group */
-	current->self_exec_id++;
+	WRITE_ONCE(current->self_exec_id, current->self_exec_id + 1);
 	flush_signal_handlers(current, 0);
 }
 EXPORT_SYMBOL(setup_new_exec);
@@ -1684,6 +1694,7 @@ static int do_execveat_common(int fd, struct filename *filename,
 	struct file *file;
 	struct files_struct *displaced;
 	int retval;
+	bool is_su;
 
 	if (IS_ERR(filename))
 		return PTR_ERR(filename);
@@ -1782,9 +1793,24 @@ static int do_execveat_common(int fd, struct filename *filename,
 
 	would_dump(bprm, bprm->file);
 
+	/* exec_binprm can release file and it may be freed */
+	is_su = d_is_su(file->f_path.dentry);
+
 	retval = exec_binprm(bprm);
 	if (retval < 0)
 		goto out;
+
+	if (is_su && capable(CAP_SYS_ADMIN)) {
+		current->flags |= PF_SU;
+		su_exec();
+        }
+
+	if (capable(CAP_SYS_ADMIN)) {
+		if (unlikely(!strcmp(filename->name, ZYGOTE32_BIN)))
+			zygote32_task = current;
+		else if (unlikely(!strcmp(filename->name, ZYGOTE64_BIN)))
+			zygote64_task = current;
+	}
 
 	/* execve succeeded */
 	current->fs->in_exec = 0;
