@@ -378,7 +378,7 @@ void hdd_enable_ns_offload(struct hdd_adapter *adapter,
 	/* check if offload cache and send is required or not */
 	status = ucfg_pmo_ns_offload_check(psoc, trigger, adapter->session_id);
 	if (QDF_IS_STATUS_ERROR(status)) {
-		hdd_info("NS offload is not required");
+		//hdd_info("NS offload is not required");
 		goto free_req;
 	}
 
@@ -436,7 +436,7 @@ void hdd_disable_ns_offload(struct hdd_adapter *adapter,
 	status = ucfg_pmo_ns_offload_check(hdd_ctx->psoc, trigger,
 					   adapter->session_id);
 	if (status != QDF_STATUS_SUCCESS) {
-		hdd_err("Flushing of NS offload not required");
+		//hdd_err("Flushing of NS offload not required");
 		goto out;
 	}
 
@@ -559,8 +559,8 @@ void hdd_disable_host_offloads(struct hdd_adapter *adapter,
 	hdd_enter();
 
 	if (!ucfg_pmo_is_vdev_supports_offload(adapter->vdev)) {
-		hdd_info("offload is not supported on this vdev opmode: %d",
-				adapter->device_mode);
+		//hdd_info("offload is not supported on this vdev opmode: %d",
+		//		adapter->device_mode);
 			goto out;
 	}
 
@@ -893,7 +893,7 @@ void hdd_enable_arp_offload(struct hdd_adapter *adapter,
 
 	status = ucfg_pmo_check_arp_offload(psoc, trigger, adapter->session_id);
 	if (QDF_IS_STATUS_ERROR(status)) {
-		hdd_info("ARP offload not required");
+		//hdd_info("ARP offload not required");
 		goto free_req;
 	}
 
@@ -1061,7 +1061,7 @@ hdd_suspend_wlan(void)
 	struct hdd_adapter *adapter = NULL;
 	uint32_t conn_state_mask = 0;
 
-	hdd_info("WLAN being suspended by OS");
+	//hdd_info("WLAN being suspended by OS");
 
 	hdd_ctx = cds_get_context(QDF_MODULE_ID_HDD);
 	if (!hdd_ctx) {
@@ -1119,7 +1119,7 @@ static int hdd_resume_wlan(void)
 	struct hdd_adapter *adapter;
 	QDF_STATUS status;
 
-	hdd_info("WLAN being resumed by OS");
+	//hdd_info("WLAN being resumed by OS");
 
 	hdd_ctx = cds_get_context(QDF_MODULE_ID_HDD);
 	if (!hdd_ctx) {

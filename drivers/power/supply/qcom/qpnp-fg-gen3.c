@@ -1183,8 +1183,8 @@ static int fg_set_esr_timer(struct fg_chip *chip, int cycles_init,
 		return rc;
 	}
 
-	fg_dbg(chip, FG_STATUS, "esr_%s_timer set to %d/%d\n",
-		charging ? "charging" : "discharging", cycles_init, cycles_max);
+	//fg_dbg(chip, FG_STATUS, "esr_%s_timer set to %d/%d\n",
+	//	charging ? "charging" : "discharging", cycles_init, cycles_max);
 	return 0;
 }
 
@@ -1900,9 +1900,9 @@ static int fg_charge_full_update(struct fg_chip *chip)
 	}
 	msoc = DIV_ROUND_CLOSEST(msoc_raw * FULL_CAPACITY, FULL_SOC_RAW);
 
-	fg_dbg(chip, FG_STATUS, "msoc: %d bsoc: %x health: %d status: %d full: %d\n",
-		msoc, bsoc, chip->health, chip->charge_status,
-		chip->charge_full);
+	//fg_dbg(chip, FG_STATUS, "msoc: %d bsoc: %x health: %d status: %d full: %d\n",
+	//	msoc, bsoc, chip->health, chip->charge_status,
+	//	chip->charge_full);
 	if (chip->charge_done && !chip->charge_full) {
 		if (msoc >= 99 && (chip->health == POWER_SUPPLY_HEALTH_GOOD
 				|| chip->health == POWER_SUPPLY_HEALTH_COOL
@@ -2541,7 +2541,7 @@ static int fg_esr_timer_config(struct fg_chip *chip, bool sleep)
 	bool end_of_charge = false;
 
 	end_of_charge = is_input_present(chip) && chip->charge_done;
-	fg_dbg(chip, FG_STATUS, "sleep: %d eoc: %d\n", sleep, end_of_charge);
+	//fg_dbg(chip, FG_STATUS, "sleep: %d eoc: %d\n", sleep, end_of_charge);
 
 	/* ESR discharging timer configuration */
 	cycles_init = sleep ? chip->dt.esr_timer_asleep[TIMER_RETRY] :
@@ -2779,8 +2779,8 @@ static void fg_cycle_counter_update(struct fg_chip *chip)
 		}
 	}
 
-	fg_dbg(chip, FG_STATUS, "batt_soc: %d bucket: %d chg_status: %d\n",
-		batt_soc, bucket, chip->charge_status);
+	//fg_dbg(chip, FG_STATUS, "batt_soc: %d bucket: %d chg_status: %d\n",
+	//	batt_soc, bucket, chip->charge_status);
 out:
 	mutex_unlock(&chip->cyc_ctr.lock);
 }
@@ -3088,8 +3088,8 @@ static void status_change_work(struct work_struct *work)
 	fg_ttf_update(chip);
 	chip->prev_charge_status = chip->charge_status;
 out:
-	fg_dbg(chip, FG_STATUS, "charge_status:%d charge_type:%d charge_done:%d\n",
-		chip->charge_status, chip->charge_type, chip->charge_done);
+	//fg_dbg(chip, FG_STATUS, "charge_status:%d charge_type:%d charge_done:%d\n",
+	//	chip->charge_status, chip->charge_type, chip->charge_done);
 	fg_relax(chip, FG_STATUS_NOTIFY_WAKE);
 }
 
