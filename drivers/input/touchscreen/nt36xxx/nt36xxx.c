@@ -1135,7 +1135,7 @@ static void nvt_ts_work_func(struct work_struct *work)
 	int32_t finger_cnt = 0;
 
     pm_wakeup_event(&ts->client->dev,150);
-    NVT_ERR("Touch work pm_wakeup\n");
+    //NVT_ERR("Touch work pm_wakeup\n");
 
 	mutex_lock(&ts->lock);
 
@@ -1280,7 +1280,7 @@ static irqreturn_t nvt_ts_irq_handler(int32_t irq, void *dev_id)
 		dev_dbg(&ts->client->dev, "%s gesture wakeup\n", __func__);
 	}
 
-    NVT_ERR("Touch irq pm_wakeup\n");
+    //NVT_ERR("Touch irq pm_wakeup\n");
     pm_wakeup_event(&ts->client->dev,150);
 
 	queue_work(nvt_wq, &ts->nvt_work);
