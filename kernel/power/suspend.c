@@ -276,15 +276,12 @@ static bool valid_state(suspend_state_t state)
  * available (if any), and the "freeze" label corresponds to the remaining
  * available sleep state (if there is one).
  */
-static bool relative_states;
-
 void __init pm_states_init(void)
 {
 	/*
 	 * freeze state should be supported even without any suspend_ops,
 	 * initialize pm_states accordingly here
 	 */
-	pm_states[PM_SUSPEND_FREEZE] = pm_labels[relative_states ? 0 : 2];
 	mem_sleep_states[PM_SUSPEND_FREEZE] = mem_sleep_labels[PM_SUSPEND_FREEZE];
 
 #ifdef CONFIG_PM_SLEEP_MONITOR
@@ -293,13 +290,20 @@ void __init pm_states_init(void)
 
 }
 
-static int __init sleep_states_setup(char *str)
+static int __init mem_sleep_default_setup(char *str)
 {
-	relative_states = !strncmp(str, "1", 1);
+	suspend_state_t state;
+
+	for (state = PM_SUSPEND_FREEZE; state <= PM_SUSPEND_MEM; state++)
+		if (mem_sleep_labels[state] &&
+		    !strcmp(str, mem_sleep_labels[state])) {
+			mem_sleep_default = state;
+			break;
+		}
+
 	return 1;
 }
-
-__setup("relative_sleep_states=", sleep_states_setup);
+__setup("mem_sleep_default=", mem_sleep_default_setup);
 
 /**
  * suspend_set_ops - Set the global suspend method table.
@@ -307,21 +311,21 @@ __setup("relative_sleep_states=", sleep_states_setup);
  */
 void suspend_set_ops(const struct platform_suspend_ops *ops)
 {
-	suspend_state_t i;
-	int j = 0;
-
-	lock_system_sleep();
+    lock_system_sleep();
 
 	suspend_ops = ops;
-	for (i = PM_SUSPEND_MEM; i >= PM_SUSPEND_STANDBY; i--)
-		if (valid_state(i)) {
-			pm_states[i] = pm_labels[j++];
-		} else if (!relative_states) {
-			pm_states[i] = NULL;
-			j++;
-		}
 
-	pm_states[PM_SUSPEND_FREEZE] = pm_labels[j];
+	if (valid_state(PM_SUSPEND_STANDBY)) {
+		mem_sleep_states[PM_SUSPEND_STANDBY] = mem_sleep_labels[PM_SUSPEND_STANDBY];
+		pm_states[PM_SUSPEND_STANDBY] = "standby";
+		if (mem_sleep_default == PM_SUSPEND_STANDBY)
+			mem_sleep_current = PM_SUSPEND_STANDBY;
+	}
+	if (valid_state(PM_SUSPEND_MEM)) {
+		mem_sleep_states[PM_SUSPEND_MEM] = mem_sleep_labels[PM_SUSPEND_MEM];
+		if (mem_sleep_default == PM_SUSPEND_MEM)
+			mem_sleep_current = PM_SUSPEND_MEM;
+	}
 
 	unlock_system_sleep();
 }
