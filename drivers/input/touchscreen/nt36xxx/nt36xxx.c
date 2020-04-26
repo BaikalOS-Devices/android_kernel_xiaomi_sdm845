@@ -1066,7 +1066,7 @@ static void nvt_ts_work_func(void)
 	int32_t finger_cnt;
 
     pm_wakeup_event(&ts->client->dev,150);
-    NVT_ERR("Touch work pm_wakeup\n");
+    //NVT_ERR("Touch work pm_wakeup\n");
 
 	mutex_lock(&ts->lock);
 
@@ -1194,7 +1194,6 @@ static irqreturn_t nvt_ts_irq_handler(int32_t irq, void *dev_id)
 	}
 
 	pm_qos_update_request(&ts->pm_qos_req, 100);
-    NVT_ERR("Touch irq pm_wakeup\n");
     pm_wakeup_event(&ts->client->dev,150);
 	nvt_ts_work_func();
 	pm_qos_update_request(&ts->pm_qos_req, PM_QOS_DEFAULT_VALUE);
