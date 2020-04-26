@@ -2148,7 +2148,7 @@ static int drm_notifier_callback(struct notifier_block *self, unsigned long even
 static int nvt_pm_suspend(struct device *dev)
 {
 	if (device_may_wakeup(dev) && ts->gesture_enabled) {
-		NVT_LOG("enable touch irq wake\n");
+		//NVT_LOG("enable touch irq wake\n");
 		enable_irq_wake(ts->client->irq);
 	}
 	ts->dev_pm_suspend = false;
@@ -2160,7 +2160,7 @@ static int nvt_pm_suspend(struct device *dev)
 static int nvt_pm_resume(struct device *dev)
 {
 	if (device_may_wakeup(dev) && ts->gesture_enabled) {
-		NVT_LOG("disable touch irq wake\n");
+		//NVT_LOG("disable touch irq wake\n");
 		disable_irq_wake(ts->client->irq);
 	}
 	ts->dev_pm_suspend = false;

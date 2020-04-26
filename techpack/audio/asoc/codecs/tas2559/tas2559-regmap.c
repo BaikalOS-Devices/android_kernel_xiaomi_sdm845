@@ -976,7 +976,7 @@ static enum hrtimer_restart temperature_timer_func(struct hrtimer *timer)
 
 static int tas2559_runtime_suspend(struct tas2559_priv *pTAS2559)
 {
-	dev_dbg(pTAS2559->dev, "%s\n", __func__);
+	//dev_dbg(pTAS2559->dev, "%s\n", __func__);
 
 	pTAS2559->mbRuntimeSuspend = true;
 
@@ -1004,7 +1004,7 @@ static int tas2559_runtime_resume(struct tas2559_priv *pTAS2559)
 {
 	struct TProgram *pProgram;
 
-	dev_dbg(pTAS2559->dev, "%s\n", __func__);
+	//dev_dbg(pTAS2559->dev, "%s\n", __func__);
 	if (!pTAS2559->mpFirmware->mpPrograms) {
 		dev_dbg(pTAS2559->dev, "%s, firmware not loaded\n", __func__);
 		goto end;

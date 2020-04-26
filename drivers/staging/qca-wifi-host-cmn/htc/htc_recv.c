@@ -420,8 +420,8 @@ QDF_STATUS htc_rx_completion_handler(void *Context, qdf_nbuf_t netbuf,
 				break;
 #ifdef HTC_MSG_WAKEUP_FROM_SUSPEND_ID
 			case HTC_MSG_WAKEUP_FROM_SUSPEND_ID:
-				AR_DEBUG_PRINTF(ATH_DEBUG_ANY,
-					("Received initial wake up"));
+				//AR_DEBUG_PRINTF(ATH_DEBUG_ANY,
+				//	("Received initial wake up"));
 				htc_credit_record(HTC_INITIAL_WAKE_UP,
 					pEndpoint->TxCredits,
 					HTC_PACKET_QUEUE_DEPTH(

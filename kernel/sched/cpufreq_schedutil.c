@@ -584,13 +584,8 @@ static ssize_t scaling_divider_store(struct gov_attr_set *attr_set,
 	return count;
 }
 
-static struct governor_attr rate_limit_us = __ATTR_RW(rate_limit_us);
-static struct governor_attr hispeed_load = __ATTR_RW(hispeed_load);
-static struct governor_attr hispeed_freq = __ATTR_RW(hispeed_freq);
-static struct governor_attr pl = __ATTR_RW(pl);
 static struct governor_attr up_rate_limit_us = __ATTR_RW(up_rate_limit_us);
 static struct governor_attr down_rate_limit_us = __ATTR_RW(down_rate_limit_us);
-
 static struct governor_attr iowait_boost_enable = __ATTR_RW(iowait_boost_enable);
 static struct governor_attr scaling_multiplier = __ATTR_RW(scaling_multiplier);
 static struct governor_attr scaling_divider = __ATTR_RW(scaling_divider);

@@ -186,14 +186,14 @@ static int tas2559_dev_load_data(struct tas2559_priv *pTAS2559,
 
 			if (nRegister == TAS2559_UDELAY) {
 				udelay(nData);
-				dev_dbg(pTAS2559->dev, "%s, udelay %d\n", __func__, nData);
+				//dev_dbg(pTAS2559->dev, "%s, udelay %d\n", __func__, nData);
 			} else if (nRegister == TAS2559_MDELAY) {
 				mdelay(nData);
-				dev_dbg(pTAS2559->dev, "%s, msleep %d\n", __func__, nData);
+				//dev_dbg(pTAS2559->dev, "%s, msleep %d\n", __func__, nData);
 			} else if (nRegister != 0xFFFFFFFF) {
-				dev_dbg(pTAS2559->dev, "%s, write chl=%d, B[%d]P[%d]R[%d]=0x%x\n",
-					__func__, chl, TAS2559_BOOK_ID(nRegister),
-					TAS2559_PAGE_ID(nRegister), TAS2559_PAGE_REG(nRegister), nData);
+				//dev_dbg(pTAS2559->dev, "%s, write chl=%d, B[%d]P[%d]R[%d]=0x%x\n",
+				//	__func__, chl, TAS2559_BOOK_ID(nRegister),
+				//	TAS2559_PAGE_ID(nRegister), TAS2559_PAGE_REG(nRegister), nData);
 				nResult = pTAS2559->write(pTAS2559, chl, nRegister, nData);
 				if (nResult < 0)
 					break;
@@ -269,7 +269,7 @@ static int tas2559_DevStartup(struct tas2559_priv *pTAS2559,
 	if (dev == DevB)
 		chl = DevBoth;
 
-	dev_dbg(pTAS2559->dev, "%s, chl=%d\n", __func__, chl);
+	//dev_dbg(pTAS2559->dev, "%s, chl=%d\n", __func__, chl);
 	nResult = tas2559_dev_load_data(pTAS2559, chl, p_tas2559_startup_data);
 
 	return nResult;
@@ -280,7 +280,7 @@ static int tas2559_DevShutdown(struct tas2559_priv *pTAS2559,
 {
 	int nResult = 0;
 
-	dev_dbg(pTAS2559->dev, "%s, dev=%d\n", __func__, dev);
+	//dev_dbg(pTAS2559->dev, "%s, dev=%d\n", __func__, dev);
 
 	if (dev == DevB)
 		nResult = tas2559_dev_load_data(pTAS2559, dev, p_tas2559_shutdown_DevB_data);
@@ -305,7 +305,7 @@ int tas2559_SA_DevChnSetup(struct tas2559_priv *pTAS2559, unsigned int mode)
 	unsigned char buf_DevA_MonoMix_DevB_MonoMix[16] = {0x20, 0, 0, 0, 0x20, 0, 0, 0, 0x20, 0, 0, 0, 0x20, 0, 0, 0};
 	unsigned char *pDevBuf = NULL;
 
-	dev_dbg(pTAS2559->dev, "%s, mode %d\n", __func__, mode);
+	//dev_dbg(pTAS2559->dev, "%s, mode %d\n", __func__, mode);
 	if ((pTAS2559->mpFirmware->mnPrograms == 0)
 	    || (pTAS2559->mpFirmware->mnConfigurations == 0)) {
 		dev_err(pTAS2559->dev, "%s, firmware not loaded\n", __func__);
@@ -319,7 +319,7 @@ int tas2559_SA_DevChnSetup(struct tas2559_priv *pTAS2559, unsigned int mode)
 	}
 
 	if (pTAS2559->mbLoadConfigurationPrePowerUp) {
-		dev_dbg(pTAS2559->dev, "%s, setup channel after coeff update\n", __func__);
+		//dev_dbg(pTAS2559->dev, "%s, setup channel after coeff update\n", __func__);
 		pTAS2559->mnChannelState = mode;
 		goto end;
 	}
@@ -379,7 +379,7 @@ int tas2559_set_DAC_gain(struct tas2559_priv *pTAS2559,
 	int nResult = 0;
 	int gain = (nGain & 0x0f);
 
-	dev_dbg(pTAS2559->dev, "%s, nGain: %d", __func__, nGain);
+	//dev_dbg(pTAS2559->dev, "%s, nGain: %d", __func__, nGain);
 
 	if (chl & DevA) {
 		nResult = pTAS2559->update_bits(pTAS2559, DevA,
@@ -424,7 +424,7 @@ int tas2559_set_bit_rate(struct tas2559_priv *pTAS2559, unsigned int nBitRate)
 {
 	int nResult = 0, n = -1;
 
-	dev_dbg(pTAS2559->dev, "%s: nBitRate = %d\n", __func__, nBitRate);
+	//dev_dbg(pTAS2559->dev, "%s: nBitRate = %d\n", __func__, nBitRate);
 
 	switch (nBitRate) {
 	case 16:
@@ -490,10 +490,10 @@ int tas2559_DevMute(struct tas2559_priv *pTAS2559, enum channel dev, bool mute)
 {
 	int nResult = 0;
 
-	dev_dbg(pTAS2559->dev, "%s, dev=%d, mute=%d\n", __func__, dev, mute);
+	//dev_dbg(pTAS2559->dev, "%s, dev=%d, mute=%d\n", __func__, dev, mute);
 
 	if (pTAS2559->mbMute) {
-		dev_dbg(pTAS2559->dev, "%s, always mute \n", __func__);
+		//dev_dbg(pTAS2559->dev, "%s, always mute \n", __func__);
 		return tas2559_dev_load_data(pTAS2559, dev, p_tas2559_mute_data);
 	}
 
@@ -633,7 +633,7 @@ int tas2559_update_VBstVolt(struct tas2559_priv *pTAS2559, enum channel chn)
 		if (chn & DevB) {
 			nResult = pTAS2559->update_bits(pTAS2559, DevB, TAS2560_VBST_VOLT_REG, 0xe0, (nVBstVoltSet << 5));
 		}
-		dev_dbg(pTAS2559->dev, "%s, set vbst voltage (%d channel) 0x%x\n", __func__, chn, (nVBstVoltSet << 5));
+		//dev_dbg(pTAS2559->dev, "%s, set vbst voltage (%d channel) 0x%x\n", __func__, chn, (nVBstVoltSet << 5));
 	}
 
 	return nResult;
@@ -643,7 +643,7 @@ int tas2559_get_VBoost(struct tas2559_priv *pTAS2559, int *pVBoost)
 {
 	int nResult = 0;
 
-	dev_dbg(pTAS2559->dev, "%s, VBoost state %d\n", __func__, pTAS2559->mnVBoostState);
+	//dev_dbg(pTAS2559->dev, "%s, VBoost state %d\n", __func__, pTAS2559->mnVBoostState);
 	switch (pTAS2559->mnVBoostState) {
 	case TAS2559_VBST_NEED_DEFAULT:
 	case TAS2559_VBST_DEFAULT:
@@ -709,7 +709,7 @@ int tas2559_set_VBoost(struct tas2559_priv *pTAS2559, int vboost, bool bPowerOn)
 	struct TConfiguration *pConfiguration;
 	unsigned int nConfig;
 
-	dev_dbg(pTAS2559->dev, "%s", __func__);
+	//dev_dbg(pTAS2559->dev, "%s", __func__);
 
 	if ((!pTAS2559->mpFirmware->mnConfigurations)
 		|| (!pTAS2559->mpFirmware->mnPrograms)) {
@@ -736,7 +736,7 @@ int tas2559_set_VBoost(struct tas2559_priv *pTAS2559, int vboost, bool bPowerOn)
 
 	pConfiguration = &(pTAS2559->mpFirmware->mpConfigurations[nConfig]);
 
-	dev_dbg(pTAS2559->dev, "VBoost state: %d, nConfig: %d", pTAS2559->mnVBoostState, nConfig);
+	//dev_dbg(pTAS2559->dev, "VBoost state: %d, nConfig: %d", pTAS2559->mnVBoostState, nConfig);
 
 	if (pTAS2559->mnVBoostState == TAS2559_VBST_NEED_DEFAULT) {
 		if (pConfiguration->mnDevices & DevA) {
@@ -761,16 +761,16 @@ int tas2559_set_VBoost(struct tas2559_priv *pTAS2559, int vboost, bool bPowerOn)
 			if (nResult < 0)
 				goto end;
 		}
-		dev_dbg(pTAS2559->dev, "%s, get default VBoost\n", __func__);
+		//dev_dbg(pTAS2559->dev, "%s, get default VBoost\n", __func__);
 		pTAS2559->mnVBoostState = TAS2559_VBST_DEFAULT;
 		if ((vboost == TAS2559_VBST_DEFAULT)
 			|| (vboost == TAS2559_VBST_NEED_DEFAULT)) {
-			dev_dbg(pTAS2559->dev, "%s, already default, bypass\n", __func__);
+			//dev_dbg(pTAS2559->dev, "%s, already default, bypass\n", __func__);
 			goto end;
 		}
 	}
 
-	dev_dbg(pTAS2559->dev, "vboost: %d\n", vboost);
+	//dev_dbg(pTAS2559->dev, "vboost: %d\n", vboost);
 
 	if (vboost) {
 		if (pConfiguration->mnDevices & DevA) {
@@ -797,14 +797,14 @@ int tas2559_set_VBoost(struct tas2559_priv *pTAS2559, int vboost, bool bPowerOn)
 					pTAS2559->mnVBoostState |= TAS2559_VBST_A_ON;
 				}
 			}
-			dev_dbg(pTAS2559->dev, "%s, devA Boost On, %d\n", __func__, pTAS2559->mnVBoostState);
+			//dev_dbg(pTAS2559->dev, "%s, devA Boost On, %d\n", __func__, pTAS2559->mnVBoostState);
 		} else {
 			if (pTAS2559->mnVBoostState & TAS2559_VBST_A_ON) {
 				nResult = tas2559_restore_VBstCtl(pTAS2559, DevA);
 				if (nResult < 0)
 					goto end;
 				pTAS2559->mnVBoostState &= ~TAS2559_VBST_A_ON;
-				dev_dbg(pTAS2559->dev, "%s, devA Boost Off, %d\n", __func__, pTAS2559->mnVBoostState);
+				//dev_dbg(pTAS2559->dev, "%s, devA Boost Off, %d\n", __func__, pTAS2559->mnVBoostState);
 			}
 		}
 
@@ -822,14 +822,14 @@ int tas2559_set_VBoost(struct tas2559_priv *pTAS2559, int vboost, bool bPowerOn)
 					goto end;
 				pTAS2559->mnVBoostState |= TAS2559_VBST_B_ON;
 			}
-			dev_dbg(pTAS2559->dev, "%s, devB Boost On, %d\n", __func__, pTAS2559->mnVBoostState);
+			//dev_dbg(pTAS2559->dev, "%s, devB Boost On, %d\n", __func__, pTAS2559->mnVBoostState);
 		}  else {
 			if (pTAS2559->mnVBoostState & TAS2559_VBST_B_ON) {
 				nResult = tas2559_restore_VBstCtl(pTAS2559, DevB);
 				if (nResult < 0)
 					goto end;
 				pTAS2559->mnVBoostState &= ~TAS2559_VBST_B_ON;
-				dev_dbg(pTAS2559->dev, "%s, devB Boost Off, %d\n", __func__, pTAS2559->mnVBoostState);
+				//dev_dbg(pTAS2559->dev, "%s, devB Boost Off, %d\n", __func__, pTAS2559->mnVBoostState);
 			}
 		}
 	} else {
@@ -838,14 +838,14 @@ int tas2559_set_VBoost(struct tas2559_priv *pTAS2559, int vboost, bool bPowerOn)
 			if (nResult < 0)
 				goto end;
 			pTAS2559->mnVBoostState &= ~TAS2559_VBST_A_ON;
-			dev_dbg(pTAS2559->dev, "%s, devA Boost default, %d\n", __func__, pTAS2559->mnVBoostState);
+			//dev_dbg(pTAS2559->dev, "%s, devA Boost default, %d\n", __func__, pTAS2559->mnVBoostState);
 		}
 		if (pTAS2559->mnVBoostState & TAS2559_VBST_B_ON) {
 			nResult = tas2559_restore_VBstCtl(pTAS2559, DevB);
 			if (nResult < 0)
 				goto end;
 			pTAS2559->mnVBoostState &= ~TAS2559_VBST_B_ON;
-			dev_dbg(pTAS2559->dev, "%s, devB Boost default, %d\n", __func__, pTAS2559->mnVBoostState);
+			//dev_dbg(pTAS2559->dev, "%s, devB Boost default, %d\n", __func__, pTAS2559->mnVBoostState);
 		}
 	}
 
@@ -866,7 +866,7 @@ int tas2559_load_platdata(struct tas2559_priv *pTAS2559)
 	int nResult = 0;
 	int nDev = 0;
 
-	dev_dbg(pTAS2559->dev, "%s\n", __func__);
+	//dev_dbg(pTAS2559->dev, "%s\n", __func__);
 
 	if (gpio_is_valid(pTAS2559->mnDevAGPIOIRQ))
 		nDev |= DevA;
@@ -900,7 +900,7 @@ int tas2559_load_default(struct tas2559_priv *pTAS2559)
 {
 	int nResult = 0;
 
-	dev_dbg(pTAS2559->dev, "%s\n", __func__);
+	//dev_dbg(pTAS2559->dev, "%s\n", __func__);
 	nResult = tas2559_dev_load_data(pTAS2559, DevBoth, p_tas2559_default_data);
 
 	if (nResult < 0)
@@ -984,8 +984,8 @@ static int tas2559_load_coefficient(struct tas2559_priv *pTAS2559,
 	enum channel chl;
 	bool bRestorePower = false;
 
-	dev_dbg(pTAS2559->dev, "%s, Prev=%d, new=%d, Pow=%d\n",
-		__func__, nPrevConfig, nNewConfig, bPowerOn);
+	//dev_dbg(pTAS2559->dev, "%s, Prev=%d, new=%d, Pow=%d\n",
+	//	__func__, nPrevConfig, nNewConfig, bPowerOn);
 
 	if (!pTAS2559->mpFirmware->mnConfigurations) {
 		dev_err(pTAS2559->dev, "%s, firmware not loaded\n", __func__);
@@ -1003,7 +1003,7 @@ static int tas2559_load_coefficient(struct tas2559_priv *pTAS2559,
 		chl = DevBoth;
 	} else
 		if (nPrevConfig == nNewConfig) {
-			dev_dbg(pTAS2559->dev, "%d configuration is already loaded\n", nNewConfig);
+			//dev_dbg(pTAS2559->dev, "%d configuration is already loaded\n", nNewConfig);
 			goto end;
 		} else {
 			pPrevConfiguration = &(pTAS2559->mpFirmware->mpConfigurations[nPrevConfig]);
@@ -1016,7 +1016,7 @@ static int tas2559_load_coefficient(struct tas2559_priv *pTAS2559,
 	if (pPrevConfiguration) {
 		if ((pPrevConfiguration->mnPLL == pNewConfiguration->mnPLL)
 		    && (pPrevConfiguration->mnDevices == pNewConfiguration->mnDevices)) {
-			dev_dbg(pTAS2559->dev, "%s, PLL and device same\n", __func__);
+			//dev_dbg(pTAS2559->dev, "%s, PLL and device same\n", __func__);
 			goto prog_coefficient;
 		}
 	}
@@ -1040,8 +1040,8 @@ static int tas2559_load_coefficient(struct tas2559_priv *pTAS2559,
 
 	/* load PLL */
 	pPLL = &(pTAS2559->mpFirmware->mpPLLs[pNewConfiguration->mnPLL]);
-	dev_dbg(pTAS2559->dev, "load PLL: %s block for Configuration %s\n",
-		pPLL->mpName, pNewConfiguration->mpName);
+	//dev_dbg(pTAS2559->dev, "load PLL: %s block for Configuration %s\n",
+	//	pPLL->mpName, pNewConfiguration->mpName);
 	nResult = tas2559_load_block(pTAS2559, &(pPLL->mBlock));
 
 	if (nResult < 0)
@@ -1049,8 +1049,8 @@ static int tas2559_load_coefficient(struct tas2559_priv *pTAS2559,
 
 	pTAS2559->mnCurrentSampleRate = pNewConfiguration->mnSamplingRate;
 
-	dev_dbg(pTAS2559->dev, "load configuration %s conefficient pre block\n",
-		pNewConfiguration->mpName);
+	//dev_dbg(pTAS2559->dev, "load configuration %s conefficient pre block\n",
+	//	pNewConfiguration->mpName);
 
 	if (pNewConfiguration->mnDevices & DevA) {
 		nResult = tas2559_load_data(pTAS2559, &(pNewConfiguration->mData), TAS2559_BLOCK_CFG_PRE_DEV_A);
@@ -1067,8 +1067,8 @@ static int tas2559_load_coefficient(struct tas2559_priv *pTAS2559,
 	}
 
 prog_coefficient:
-	dev_dbg(pTAS2559->dev, "load new configuration: %s, coeff block data\n",
-		pNewConfiguration->mpName);
+	//dev_dbg(pTAS2559->dev, "load new configuration: %s, coeff block data\n",
+	//	pNewConfiguration->mpName);
 
 	if (pNewConfiguration->mnDevices & DevA) {
 		nResult = tas2559_load_data(pTAS2559, &(pNewConfiguration->mData),
@@ -1102,8 +1102,8 @@ prog_coefficient:
 	}
 
 	if (bRestorePower) {
-		dev_dbg(pTAS2559->dev, "%s, set vboost, before power on %d\n",
-			__func__, pTAS2559->mnVBoostState);
+		//dev_dbg(pTAS2559->dev, "%s, set vboost, before power on %d\n",
+		//	__func__, pTAS2559->mnVBoostState);
 		nResult = tas2559_set_VBoost(pTAS2559, pTAS2559->mnVBoostState, false);
 		if (nResult < 0)
 			goto end;
@@ -1131,8 +1131,8 @@ prog_coefficient:
 				goto end;
 		}
 
-		dev_dbg(pTAS2559->dev,
-			"device powered up, load unmute\n");
+		//dev_dbg(pTAS2559->dev,
+		//	"device powered up, load unmute\n");
 		nResult = tas2559_DevMute(pTAS2559, pNewConfiguration->mnDevices, false);
 
 		if (nResult < 0)
@@ -1165,7 +1165,7 @@ int tas2559_enable(struct tas2559_priv *pTAS2559, bool bEnable)
 	struct TConfiguration *pConfiguration;
 	unsigned int nValue;
 
-	dev_dbg(pTAS2559->dev, "%s: %s\n", __func__, bEnable ? "On" : "Off");
+	//dev_dbg(pTAS2559->dev, "%s: %s\n", __func__, bEnable ? "On" : "Off");
 
 	if ((pTAS2559->mpFirmware->mnPrograms == 0)
 	    || (pTAS2559->mpFirmware->mnConfigurations == 0)) {
@@ -1194,7 +1194,7 @@ int tas2559_enable(struct tas2559_priv *pTAS2559, bool bEnable)
 			}
 
 			pTAS2559->read(pTAS2559, DevA, TAS2559_VBOOST_CTL_REG, &nValue);
-			dev_dbg(pTAS2559->dev, "VBoost ctrl register before coeff set: 0x%x\n", nValue);
+			//dev_dbg(pTAS2559->dev, "VBoost ctrl register before coeff set: 0x%x\n", nValue);
 
 			if (pTAS2559->mbLoadConfigurationPrePowerUp) {
 				pTAS2559->mbLoadConfigurationPrePowerUp = false;
@@ -1209,11 +1209,11 @@ int tas2559_enable(struct tas2559_priv *pTAS2559, bool bEnable)
 			}
 
 			pTAS2559->read(pTAS2559, DevA, TAS2559_VBOOST_CTL_REG, &nValue);
-			dev_dbg(pTAS2559->dev, "VBoost ctrl register after coeff set: 0x%x\n", nValue);
+			//dev_dbg(pTAS2559->dev, "VBoost ctrl register after coeff set: 0x%x\n", nValue);
 
 			if (pTAS2559->mbLoadVBoostPrePowerUp) {
-				dev_dbg(pTAS2559->dev, "%s, cfg boost before power on new %d, current=%d\n",
-					__func__, pTAS2559->mnVBoostNewState, pTAS2559->mnVBoostState);
+				//dev_dbg(pTAS2559->dev, "%s, cfg boost before power on new %d, current=%d\n",
+				//	__func__, pTAS2559->mnVBoostNewState, pTAS2559->mnVBoostState);
 				nResult = tas2559_set_VBoost(pTAS2559, pTAS2559->mnVBoostNewState, false);
 				if (nResult < 0)
 					goto end;
@@ -1223,7 +1223,7 @@ int tas2559_enable(struct tas2559_priv *pTAS2559, bool bEnable)
 			}
 
 			pTAS2559->read(pTAS2559, DevA, TAS2559_VBOOST_CTL_REG, &nValue);
-			dev_dbg(pTAS2559->dev, "VBoost ctrl register after set VBoost: 0x%x\n", nValue);
+			//dev_dbg(pTAS2559->dev, "VBoost ctrl register after set VBoost: 0x%x\n", nValue);
 
 			pTAS2559->clearIRQ(pTAS2559);
 			pConfiguration = &(pTAS2559->mpFirmware->mpConfigurations[pTAS2559->mnCurrentConfiguration]);
@@ -1303,7 +1303,7 @@ end:
 			failsafe(pTAS2559);
 	}
 
-	dev_dbg(pTAS2559->dev, "%s: exit\n", __func__);
+	//dev_dbg(pTAS2559->dev, "%s: exit\n", __func__);
 	return nResult;
 }
 
@@ -1313,8 +1313,8 @@ int tas2559_set_sampling_rate(struct tas2559_priv *pTAS2559, unsigned int nSampl
 	struct TConfiguration *pConfiguration;
 	unsigned int nConfiguration;
 
-	dev_dbg(pTAS2559->dev, "%s: nSamplingRate = %d [Hz]\n", __func__,
-		nSamplingRate);
+	//dev_dbg(pTAS2559->dev, "%s: nSamplingRate = %d [Hz]\n", __func__,
+	//	nSamplingRate);
 
 	if ((!pTAS2559->mpFirmware->mpPrograms) ||
 	    (!pTAS2559->mpFirmware->mpConfigurations)) {
@@ -1912,7 +1912,7 @@ static int DevABlockYRAM(struct tas2559_priv *pTAS2559,
 			if ((nPage == TAS2559_PAGE_ID(TAS2559_SA_COEFF_SWAP_REG))
 				&& (nReg == TAS2559_PAGE_REG(TAS2559_SA_COEFF_SWAP_REG))
 				&& (len == 4)) {
-				dev_dbg(pTAS2559->dev, "bypass swap\n");
+				//dev_dbg(pTAS2559->dev, "bypass swap\n");
 				nResult = 0;
 			} else if (nReg > TAS2559_YRAM2_END_REG) {
 				nResult = 0;
@@ -2185,8 +2185,8 @@ static int tas2559_load_block(struct tas2559_priv *pTAS2559, struct TBlock *pBlo
 	int nRetry = 6;
 	unsigned char *pData = pBlock->mpData;
 
-	dev_dbg(pTAS2559->dev, "%s: Type = %d, commands = %d\n", __func__,
-		pBlock->mnType, pBlock->mnCommands);
+	//dev_dbg(pTAS2559->dev, "%s: Type = %d, commands = %d\n", __func__,
+	//	pBlock->mnType, pBlock->mnCommands);
 
 	if (pBlock->mnType == TAS2559_BLOCK_PLL) {
 		chl = DevA;
@@ -2315,7 +2315,7 @@ start:
 
 		nResult = 0;
 		pTAS2559->mnErrCode &= ~ERROR_PRAM_CRCCHK;
-		dev_dbg(pTAS2559->dev, "Block[0x%x] PChkSum match\n", pBlock->mnType);
+		//dev_dbg(pTAS2559->dev, "Block[0x%x] PChkSum match\n", pBlock->mnType);
 	}
 
 	if (bDoYCRCChk) {
@@ -2329,7 +2329,7 @@ start:
 
 		pTAS2559->mnErrCode &= ~ERROR_YRAM_CRCCHK;
 		nResult = 0;
-		dev_dbg(pTAS2559->dev, "Block[0x%x] YChkSum match\n", pBlock->mnType);
+		//dev_dbg(pTAS2559->dev, "Block[0x%x] YChkSum match\n", pBlock->mnType);
 	}
 
 check:
@@ -2356,8 +2356,8 @@ static int tas2559_load_data(struct tas2559_priv *pTAS2559, struct TData *pData,
 	unsigned int nBlock;
 	struct TBlock *pBlock;
 
-	dev_dbg(pTAS2559->dev,
-		"TAS2559 load data: %s, Blocks = %d, Block Type = %d\n", pData->mpName, pData->mnBlocks, nType);
+	//dev_dbg(pTAS2559->dev,
+	//	"TAS2559 load data: %s, Blocks = %d, Block Type = %d\n", pData->mpName, pData->mnBlocks, nType);
 
 	for (nBlock = 0; nBlock < pData->mnBlocks; nBlock++) {
 		pBlock = &(pData->mpBlocks[nBlock]);
@@ -2380,7 +2380,7 @@ static int tas2559_load_configuration(struct tas2559_priv *pTAS2559,
 	struct TConfiguration *pCurrentConfiguration = NULL;
 	struct TConfiguration *pNewConfiguration = NULL;
 
-	dev_dbg(pTAS2559->dev, "%s: %d\n", __func__, nConfiguration);
+	//dev_dbg(pTAS2559->dev, "%s: %d\n", __func__, nConfiguration);
 
 	if ((!pTAS2559->mpFirmware->mpPrograms) ||
 	    (!pTAS2559->mpFirmware->mpConfigurations)) {
@@ -2430,8 +2430,8 @@ static int tas2559_load_configuration(struct tas2559_priv *pTAS2559,
 		nResult = tas2559_load_coefficient(pTAS2559, pTAS2559->mnCurrentConfiguration, nConfiguration, true);
 		pTAS2559->mbLoadConfigurationPrePowerUp = false;
 	} else {
-		dev_dbg(pTAS2559->dev,
-			"TAS2559 was powered down, will load coefficient when power up\n");
+		//dev_dbg(pTAS2559->dev,
+		//	"TAS2559 was powered down, will load coefficient when power up\n");
 		pTAS2559->mbLoadConfigurationPrePowerUp = true;
 		pTAS2559->mnNewConfiguration = nConfiguration;
 	}
@@ -2480,7 +2480,7 @@ int tas2559_set_config(struct tas2559_priv *pTAS2559, int config)
 		goto end;
 	}
 
-	dev_dbg(pTAS2559->dev, "%s, load new conf %s\n", __func__, pConfiguration->mpName);
+	//dev_dbg(pTAS2559->dev, "%s, load new conf %s\n", __func__, pConfiguration->mpName);
 	nResult = tas2559_load_configuration(pTAS2559, nConfiguration, false);
 
 end:
@@ -2559,7 +2559,7 @@ static int tas2559_load_calibration(struct tas2559_priv *pTAS2559,	char *pFileNa
 	unsigned char pBuffer[1000];
 	int nSize = 0;
 
-	dev_dbg(pTAS2559->dev, "%s:\n", __func__);
+	//dev_dbg(pTAS2559->dev, "%s:\n", __func__);
 
 	fs = get_fs();
 	set_fs(KERNEL_DS);
@@ -2622,7 +2622,7 @@ void tas2559_fw_ready(const struct firmware *pFW, void *pContext)
 	if (pTAS2559->mpFirmware->mpConfigurations) {
 		nProgram = pTAS2559->mnCurrentProgram;
 		nSampleRate = pTAS2559->mnCurrentSampleRate;
-		dev_dbg(pTAS2559->dev, "clear current firmware\n");
+		//dev_dbg(pTAS2559->dev, "clear current firmware\n");
 		tas2559_clear_firmware(pTAS2559->mpFirmware);
 	}
 
@@ -2877,7 +2877,7 @@ int tas2559_set_calibration(struct tas2559_priv *pTAS2559, int nCalibration)
 	pConfiguration = &(pTAS2559->mpFirmware->mpConfigurations[pTAS2559->mnCurrentConfiguration]);
 
 	if (pProgram->mnAppMode == TAS2559_APP_TUNINGMODE) {
-		dev_dbg(pTAS2559->dev, "Enable: load calibration\n");
+		//dev_dbg(pTAS2559->dev, "Enable: load calibration\n");
 		nResult = tas2559_load_data(pTAS2559, &(pCalibration->mData), TAS2559_BLOCK_CFG_COEFF_DEV_A);
 	}
 
@@ -2980,15 +2980,15 @@ int tas2559_parse_dt(struct device *dev, struct tas2559_priv *pTAS2559)
 	if (!gpio_is_valid(pTAS2559->mnDevAGPIORST))
 		dev_err(pTAS2559->dev, "Looking up %s property in node %s failed %d\n",
 			"ti,tas2559-reset-gpio", np->full_name, pTAS2559->mnDevAGPIORST);
-	else
-		dev_dbg(pTAS2559->dev, "%s, tas2559 reset gpio %d\n", __func__, pTAS2559->mnDevAGPIORST);
+	//else
+	//	dev_dbg(pTAS2559->dev, "%s, tas2559 reset gpio %d\n", __func__, pTAS2559->mnDevAGPIORST);
 
 	pTAS2559->mnDevBGPIORST = of_get_named_gpio(np, "ti,tas2560-reset-gpio", 0);
 	if (!gpio_is_valid(pTAS2559->mnDevBGPIORST))
 		dev_err(pTAS2559->dev, "Looking up %s property in node %s failed %d\n",
 			"ti,tas2560-reset-gpio", np->full_name, pTAS2559->mnDevBGPIORST);
-	else
-		dev_dbg(pTAS2559->dev, "%s, tas2560 reset gpio %d\n", __func__, pTAS2559->mnDevBGPIORST);
+	//else
+	//	dev_dbg(pTAS2559->dev, "%s, tas2560 reset gpio %d\n", __func__, pTAS2559->mnDevBGPIORST);
 
 	pTAS2559->mnDevAGPIOIRQ = of_get_named_gpio(np, "ti,tas2559-irq-gpio", 0);
 	if (!gpio_is_valid(pTAS2559->mnDevAGPIOIRQ))
@@ -3008,7 +3008,7 @@ int tas2559_parse_dt(struct device *dev, struct tas2559_priv *pTAS2559)
 		goto end;
 	} else {
 		pTAS2559->mnDevAAddr = value;
-		dev_dbg(pTAS2559->dev, "ti,tas2559 addr=0x%x\n", pTAS2559->mnDevAAddr);
+		//dev_dbg(pTAS2559->dev, "ti,tas2559 addr=0x%x\n", pTAS2559->mnDevAAddr);
 	}
 
 	rc = of_property_read_u32(np, "ti,tas2560-addr", &value);
@@ -3019,7 +3019,7 @@ int tas2559_parse_dt(struct device *dev, struct tas2559_priv *pTAS2559)
 		goto end;
 	} else {
 		pTAS2559->mnDevBAddr = value;
-		dev_dbg(pTAS2559->dev, "ti,tas2560-addr=0x%x\n", pTAS2559->mnDevBAddr);
+		//dev_dbg(pTAS2559->dev, "ti,tas2560-addr=0x%x\n", pTAS2559->mnDevBAddr);
 	}
 
 	rc = of_property_read_u32(np, "ti,tas2559-channel", &value);

@@ -387,6 +387,7 @@ SYSCALL_DEFINE2(timerfd_create, int, clockid, int, flags)
 {
 	int ufd;
 	struct timerfd_ctx *ctx;
+    char timer_name[16];
 
 	/* Check the TFD_* constants for consistency.  */
 	BUILD_BUG_ON(TFD_CLOEXEC != O_CLOEXEC);
@@ -423,7 +424,8 @@ SYSCALL_DEFINE2(timerfd_create, int, clockid, int, flags)
 
 	ctx->moffs = ktime_mono_to_real((ktime_t){ .tv64 = 0 });
 
-	ufd = anon_inode_getfd("[timerfd]", &timerfd_fops, ctx,
+    snprintf(timer_name,16, "[timerfd%d]", clockid);
+	ufd = anon_inode_getfd(timer_name, &timerfd_fops, ctx,
 			       O_RDWR | (flags & TFD_SHARED_FCNTL_FLAGS));
 	if (ufd < 0)
 		kfree(ctx);
