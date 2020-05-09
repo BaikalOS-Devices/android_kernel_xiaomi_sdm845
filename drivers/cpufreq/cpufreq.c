@@ -788,6 +788,10 @@ static ssize_t store_##file_name					\
 	if (!ret)							\
 		policy->user_policy.object = temp;			\
 									\
+\
+	pr_warn("CPU FREQ Policy changed %d,%d\n", new_policy.min, new_policy.max); \
+\
+\
 	return ret ? ret : count;					\
 }
 
