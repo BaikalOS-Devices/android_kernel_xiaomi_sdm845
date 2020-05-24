@@ -315,14 +315,16 @@
 };
 
 &pmi8998_charger {
-	qcom,usb-icl-ua = <3600000>;
+	qcom,usb-icl-ua = <2800000>;
 	qcom,fcc-max-ua = <3600000>;
-	qcom,fcc-low-temp-delta = <2520000>;
-	qcom,fcc-hot-temp-delta = <1400000>;
-	qcom,fcc-cool-temp-delta = <1960000>;
+    qcom,fv-max-uv = <4400000>;
+	qcom,fcc-low-temp-delta = <2500000>;
+	qcom,fcc-hot-temp-delta = <2600000>;
+	qcom,fcc-cool-temp-delta = <1500000>;
     google,usb-port-tz-name = "xo-therm-adc";
 	qcom,auto-recharge-soc;
     qcom,sw-jeita-enable;
+
 	qcom,thermal-mitigation
 				= <1800000 1800000 1800000 1800000 1800000 1800000 1800000
 				   1800000 1600000 1400000 1200000 1000000 1000000 900000
@@ -347,18 +349,21 @@
 
 &pmi8998_fg {
 	qcom,fg-force-load-profile;
-	qcom,fg-sys-term-current = <(-300)>;
-	qcom,fg-chg-term-current = <200>;
+	qcom,fg-sys-term-current = <(-125)>;
+	qcom,fg-chg-term-current = <100>;
 	qcom,fg-auto-recharge-soc;
 	qcom,fg-recharge-soc-thr = <99>;
 	qcom,fg-cutoff-voltage = <3100>;
 	qcom,fg-cutoff-current = <200>;
-	qcom,fg-empty-voltage = <3000>;
-	qcom,fg-jeita-hyst-temp = <3>;
-	qcom,fg-jeita-thresholds = <0 15 45 55>;
+	qcom,fg-empty-voltage = <2900>;
+	qcom,fg-jeita-hyst-temp = <2>;
+	qcom,fg-jeita-thresholds = <0 10 45 55>;
 	qcom,fg-esr-clamp-mohms = <60>;
-	qcom,fg-batt-temp-delta = <6>;
 	qcom,battery-data = <&mtp_batterydata>;
+	qcom,fg-batt-temp-delta = <2>;
+    qcom,fg-delta-soc-thr = <1>;
+    qcom,slope-limit-temp-threshold = <100>;
+	qcom,slope-limit-coeffs = <1 1 1 1>;
 };
 
 &pmi8998_pwm_1 {
