@@ -2314,8 +2314,9 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 	struct cpufreq_governor *old_gov;
 	int ret;
 
-	pr_debug("setting new policy for CPU %u: %u - %u kHz\n",
-		 new_policy->cpu, new_policy->min, new_policy->max);
+    //dump_stack();
+	//pr_err("setting new policy for CPU %u: %u - %u kHz\n",
+	//	 new_policy->cpu, new_policy->min, new_policy->max);
 
 	memcpy(&new_policy->cpuinfo, &policy->cpuinfo, sizeof(policy->cpuinfo));
 
@@ -2323,8 +2324,10 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 	* This check works well when we store new min/max freq attributes,
 	* because new_policy is a copy of policy with one field updated.
 	*/
-	if (new_policy->min > new_policy->max)
-		return -EINVAL;
+	if (new_policy->min > new_policy->max) {
+        new_policy->min = new_policy->max;
+    }
+		//return -EINVAL;
 
 	/* verify the cpu speed can be set within this limit */
 	ret = cpufreq_driver->verify(new_policy);
@@ -2335,10 +2338,16 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
 			CPUFREQ_ADJUST, new_policy);
 
+	//pr_err("CPUFREQ_ADJUST for CPU %u: %u - %u kHz\n",
+	//	 new_policy->cpu, new_policy->min, new_policy->max);
+
+
 	/* adjust if necessary - hardware incompatibility */
 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
 			CPUFREQ_INCOMPATIBLE, new_policy);
 
+	//pr_err("CPUFREQ_INCOMPATIBLE for CPU %u: %u - %u kHz\n",
+	//	 new_policy->cpu, new_policy->min, new_policy->max);
 
 	/*
 	 * verify the cpu speed can be set within this limit, which might be
@@ -2361,8 +2370,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
 
 	policy->cached_target_freq = UINT_MAX;
 
-	pr_debug("new min and max freqs are %u - %u kHz\n",
-		 policy->min, policy->max);
+	//pr_err("new min and max freqs are %u - %u kHz\n",
+	//	 policy->min, policy->max);
 
 	if (cpufreq_driver->setpolicy) {
 		policy->policy = new_policy->policy;

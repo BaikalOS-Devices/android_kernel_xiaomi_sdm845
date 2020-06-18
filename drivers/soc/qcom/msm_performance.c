@@ -49,7 +49,7 @@ static struct task_struct *events_notify_thread;
  */
 static int set_cpu_min_freq(const char *buf, const struct kernel_param *kp)
 {
-#if 1
+#if 0
 	int i, j, ntokens = 0;
 	unsigned int val, cpu;
 	const char *cp = buf;
