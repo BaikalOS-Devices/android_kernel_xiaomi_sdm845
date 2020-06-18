@@ -28,6 +28,9 @@ module_param(input_boost_freq_lp, uint, 0644);
 module_param(input_boost_freq_hp, uint, 0644);
 module_param(input_boost_duration, short, 0644);
 
+static bool boost_enabled=1;
+module_param(boost_enabled, bool, 0644);
+
 /* Available bits for boost_drv state */
 #define SCREEN_AWAKE		BIT(0)
 #define INPUT_BOOST		BIT(1)
@@ -55,14 +58,6 @@ static u32 get_boost_freq(struct boost_drv *b, u32 cpu)
 		return input_boost_freq_lp;
 
 	return input_boost_freq_hp;
-}
-
-static u32 get_min_freq(struct boost_drv *b, u32 cpu)
-{
-	if (cpumask_test_cpu(cpu, cpu_lp_mask))
-		return CONFIG_REMOVE_INPUT_BOOST_FREQ_LP;
-
-	return CONFIG_REMOVE_INPUT_BOOST_FREQ_PERF;
 }
 
 static u32 get_boost_state(struct boost_drv *b)
@@ -105,6 +100,8 @@ void cpu_input_boost_kick(void)
 {
 	struct boost_drv *b = boost_drv_g;
 
+    if(!boost_enabled) return;
+
 	if (!b)
 		return;
 
@@ -133,6 +130,8 @@ static void __cpu_input_boost_kick_max(struct boost_drv *b,
 void cpu_input_boost_kick_max(unsigned int duration_ms)
 {
 	struct boost_drv *b = boost_drv_g;
+
+    if(!boost_enabled) return;
 
 	if (!b)
 		return;
@@ -189,7 +188,7 @@ static int cpu_notifier_cb(struct notifier_block *nb,
 {
 	struct boost_drv *b = container_of(nb, typeof(*b), cpu_notif);
 	struct cpufreq_policy *policy = data;
-	u32 boost_freq, min_freq, state;
+	u32 boost_freq, state, max_freq;
 
 	if (action != CPUFREQ_ADJUST)
 		return NOTIFY_OK;
@@ -204,15 +203,15 @@ static int cpu_notifier_cb(struct notifier_block *nb,
 
 	/*
 	 * Boost to policy->max if the boost frequency is higher. When
-	 * unboosting, set policy->min to the absolute min freq for the CPU.
+	 * unboosting.
 	 */
 	if (state & INPUT_BOOST) {
 		boost_freq = get_boost_freq(b, policy->cpu);
-		policy->min = min(policy->max, boost_freq);
-	} else {
-		min_freq = get_min_freq(b, policy->cpu);
-		policy->min = max(policy->cpuinfo.min_freq, min_freq);
-	}
+        max_freq = min(policy->max, boost_freq);
+		if( policy->min < max_freq ) {
+			policy->min = max_freq;
+		}	
+    } 
 
 	return NOTIFY_OK;
 }
