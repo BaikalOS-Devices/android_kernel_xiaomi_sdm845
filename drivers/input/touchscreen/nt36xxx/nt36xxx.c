@@ -1646,7 +1646,7 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 	/*---create workqueue---*/
 	nvt_wq = alloc_workqueue("nvt_wq",
 						WQ_HIGHPRI | WQ_UNBOUND | WQ_CPU_INTENSIVE |
-						WQ_MEM_RECLAIM, 0);
+						WQ_MEM_RECLAIM, 1);
 	// nvt_wq = create_workqueue("nvt_wq");
 
     //nvt_wq = alloc_workqueue("nvt-event-queue",
