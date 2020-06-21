@@ -100,7 +100,7 @@ static inline int avc_hash(u32 ssid, u32 tsid, u16 tclass)
 {
 	return (ssid ^ (tsid<<2) ^ (tclass<<4)) & (AVC_CACHE_SLOTS - 1);
 }
-#ifdef CONFIG_AUDIT
+#ifdef CONFIG_AUDIT_ENABLED
 /**
  * avc_dump_av - Display an access vector in human-readable form.
  * @tclass: target security class
@@ -473,7 +473,7 @@ static inline int avc_xperms_audit(u32 ssid, u32 tsid, u16 tclass,
 				u8 perm, int result,
 				struct common_audit_data *ad)
 {
-#ifdef CONFIG_AUDIT
+#ifdef CONFIG_AUDIT_ENABLED
 	u32 audited, denied;
 
 	audited = avc_xperms_audit_required(
@@ -707,7 +707,7 @@ out:
 	return node;
 }
 
-#ifdef CONFIG_AUDIT
+#ifdef CONFIG_AUDIT_ENABLED
 /**
  * avc_audit_pre_callback - SELinux specific information
  * will be called by generic audit code

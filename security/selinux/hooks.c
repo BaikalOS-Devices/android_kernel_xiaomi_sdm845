@@ -3012,7 +3012,7 @@ static noinline int audit_inode_permission(struct inode *inode,
 					   int result,
 					   unsigned flags)
 {
-#ifdef CONFIG_AUDIT
+#ifdef CONFIG_AUDIT_ENABLED
 	struct common_audit_data ad;
 	struct inode_security_struct *isec = inode->i_security;
 	int rc;
@@ -6484,7 +6484,7 @@ static struct security_hook_list selinux_hooks[] __lsm_ro_after_init = {
 	LSM_HOOK_INIT(key_getsecurity, selinux_key_getsecurity),
 #endif
 
-#ifdef CONFIG_AUDIT
+#ifdef CONFIG_AUDIT_ENABLED
 	LSM_HOOK_INIT(audit_rule_init, selinux_audit_rule_init),
 	LSM_HOOK_INIT(audit_rule_known, selinux_audit_rule_known),
 	LSM_HOOK_INIT(audit_rule_match, selinux_audit_rule_match),
