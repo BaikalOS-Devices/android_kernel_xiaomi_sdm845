@@ -133,7 +133,7 @@ static inline int avc_audit(u32 ssid, u32 tsid,
 			    struct common_audit_data *a,
 			    int flags)
 {
-#ifdef CONFIG_AUDIT
+#ifdef CONFIG_AUDIT_ENABLED
 	u32 audited, denied;
 	audited = avc_audit_required(requested, avd, result, 0, &denied);
 	if (likely(!audited))

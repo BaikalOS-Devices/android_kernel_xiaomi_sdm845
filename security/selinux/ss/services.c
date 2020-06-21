@@ -3246,7 +3246,7 @@ out:
 	return match;
 }
 
-#ifdef CONFIG_AUDIT
+#ifdef CONFIG_AUDIT_ENABLED
 static int (*aurule_callback)(void) = audit_update_lsm_rules;
 
 static int aurule_avc_callback(u32 event)
