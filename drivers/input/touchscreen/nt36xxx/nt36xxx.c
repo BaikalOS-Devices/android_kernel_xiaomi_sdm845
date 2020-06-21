@@ -1134,6 +1134,8 @@ static void nvt_ts_work_func(struct work_struct *work)
 	int32_t i = 0;
 	int32_t finger_cnt = 0;
 
+    pm_wakeup_event(&ts->client->dev,150);
+
 	mutex_lock(&ts->lock);
 
 	if (ts->dev_pm_suspend) {
@@ -1273,6 +1275,8 @@ static irqreturn_t nvt_ts_irq_handler(int32_t irq, void *dev_id)
 	if (bTouchIsAwake == 0) {
 		dev_dbg(&ts->client->dev, "%s gesture wakeup\n", __func__);
 	}
+
+    pm_wakeup_event(&ts->client->dev,150);
 	queue_work(nvt_wq, &ts->nvt_work);
 
 	return IRQ_HANDLED;
