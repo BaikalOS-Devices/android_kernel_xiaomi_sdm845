@@ -31,11 +31,30 @@
 #include <linux/compiler.h>
 #include <linux/moduleparam.h>
 #include <linux/wakeup_reason.h>
+#ifdef CONFIG_PM_SLEEP_MONITOR
+#include <linux/kthread.h>
+#include <linux/sched.h>
+#endif
 
 #include "power.h"
 
-const char *pm_labels[] = { "mem", "standby", "freeze", NULL };
-const char *pm_states[PM_SUSPEND_MAX];
+#include <linux/gpio.h>
+extern int slst_gpio_base_id;
+#define PROC_AWAKE_ID 12 /* 12th bit */
+
+const char *pm_states[PM_SUSPEND_MAX] = {
+	[PM_SUSPEND_FREEZE] = "freeze",
+	[PM_SUSPEND_MEM] = "mem",
+};
+const char * const mem_sleep_labels[] = {
+	[PM_SUSPEND_FREEZE] = "s2idle",
+	[PM_SUSPEND_STANDBY] = "shallow",
+	[PM_SUSPEND_MEM] = "deep",
+};
+const char *mem_sleep_states[PM_SUSPEND_MAX];
+
+suspend_state_t mem_sleep_current = PM_SUSPEND_FREEZE;
+static suspend_state_t mem_sleep_default = PM_SUSPEND_FREEZE;
 
 unsigned int pm_suspend_global_flags;
 EXPORT_SYMBOL_GPL(pm_suspend_global_flags);
@@ -46,6 +65,134 @@ static DECLARE_WAIT_QUEUE_HEAD(suspend_freeze_wait_head);
 
 enum freeze_state __read_mostly suspend_freeze_state;
 static DEFINE_SPINLOCK(suspend_freeze_lock);
+
+#ifdef CONFIG_PM_SLEEP_MONITOR
+/* Suspend monitor thread toggle reason */
+enum toggle_reason {
+	TOGGLE_NONE,
+	TOGGLE_START,
+	TOGGLE_STOP,
+};
+
+#define SUSPEND_TIMER_TIMEOUT_MS 30000
+static struct task_struct *ksuspend_mon_tsk;
+static DECLARE_WAIT_QUEUE_HEAD(power_suspend_waitqueue);
+static enum toggle_reason suspend_mon_toggle;
+static DEFINE_MUTEX(suspend_mon_lock);
+
+static void start_suspend_mon(void)
+{
+	mutex_lock(&suspend_mon_lock);
+	suspend_mon_toggle = TOGGLE_START;
+	mutex_unlock(&suspend_mon_lock);
+	wake_up(&power_suspend_waitqueue);
+}
+
+static void stop_suspend_mon(void)
+{
+	mutex_lock(&suspend_mon_lock);
+	suspend_mon_toggle = TOGGLE_STOP;
+	mutex_unlock(&suspend_mon_lock);
+	wake_up(&power_suspend_waitqueue);
+}
+
+static void suspend_timeout(int timeout_count)
+{
+	char *null_pointer = NULL;
+
+	pr_info("Suspend monitor timeout (timer is %d seconds)\n",
+		(SUSPEND_TIMER_TIMEOUT_MS/1000));
+
+	show_state_filter(TASK_UNINTERRUPTIBLE);
+
+	if (timeout_count < 2)
+		return;
+
+	if (is_console_suspended())
+		resume_console();
+
+	pr_info("Trigger a panic\n");
+
+	/* Trigger a NULL pointer dereference */
+	*null_pointer = 'a';
+
+	/* Should not reach here */
+	pr_err("Trigger panic failed!\n");
+}
+
+static int suspend_monitor_kthread(void *arg)
+{
+	long err;
+	struct sched_param param = {.sched_priority
+		= MAX_RT_PRIO-1};
+	static int timeout_count;
+	static long timeout;
+
+	pr_info("Init ksuspend_mon thread\n");
+
+	sched_setscheduler(current, SCHED_FIFO, &param);
+
+	timeout_count = 0;
+	timeout = MAX_SCHEDULE_TIMEOUT;
+
+	do {
+		/* Wait suspend timer timeout */
+		err = wait_event_interruptible_timeout(
+			power_suspend_waitqueue,
+			(suspend_mon_toggle != TOGGLE_NONE),
+			timeout);
+
+		mutex_lock(&suspend_mon_lock);
+		/* suspend monitor state change */
+		if (suspend_mon_toggle != TOGGLE_NONE) {
+			if (suspend_mon_toggle == TOGGLE_START) {
+				timeout = msecs_to_jiffies(
+					SUSPEND_TIMER_TIMEOUT_MS);
+				pr_info("Start suspend monitor\n");
+			} else if (suspend_mon_toggle == TOGGLE_STOP) {
+				timeout = MAX_SCHEDULE_TIMEOUT;
+				timeout_count = 0;
+				pr_info("Stop suspend monitor\n");
+			}
+			suspend_mon_toggle = TOGGLE_NONE;
+			mutex_unlock(&suspend_mon_lock);
+			continue;
+		}
+		mutex_unlock(&suspend_mon_lock);
+
+		/* suspend monitor event handler */
+		if (err == 0) {
+			timeout_count++;
+			suspend_timeout(timeout_count);
+		} else if (err == -ERESTARTSYS) {
+			pr_info("Exit ksuspend_mon!");
+			break;
+		}
+	} while (1);
+
+	return 0;
+}
+
+static void init_suspend_monitor_thread(void)
+{
+	int ret;
+
+	ksuspend_mon_tsk = kthread_create(suspend_monitor_kthread,
+		NULL, "ksuspend_mon");
+	if (IS_ERR(ksuspend_mon_tsk)) {
+		ret = PTR_ERR(ksuspend_mon_tsk);
+		ksuspend_mon_tsk = NULL;
+		pr_err("Create suspend_monitor_kthread failed!"
+			" ret = %d\n", ret);
+		return;
+	}
+
+	suspend_mon_toggle = TOGGLE_NONE;
+	wake_up_process(ksuspend_mon_tsk);
+
+	return;
+}
+#endif
 
 void freeze_set_ops(const struct platform_freeze_ops *ops)
 {
@@ -61,6 +208,11 @@ static void freeze_begin(void)
 
 static void freeze_enter(void)
 {
+
+#ifdef CONFIG_PM_SLEEP_MONITOR
+        stop_suspend_mon();
+#endif
+
 	spin_lock_irq(&suspend_freeze_lock);
 	if (pm_wakeup_pending())
 		goto out;
@@ -87,6 +239,10 @@ static void freeze_enter(void)
  out:
 	suspend_freeze_state = FREEZE_STATE_NONE;
 	spin_unlock_irq(&suspend_freeze_lock);
+
+#ifdef CONFIG_PM_SLEEP_MONITOR
+	start_suspend_mon();
+#endif
 }
 
 void freeze_wake(void)
@@ -118,24 +274,34 @@ static bool valid_state(suspend_state_t state)
  * available (if any), and the "freeze" label corresponds to the remaining
  * available sleep state (if there is one).
  */
-static bool relative_states;
-
 void __init pm_states_init(void)
 {
 	/*
 	 * freeze state should be supported even without any suspend_ops,
 	 * initialize pm_states accordingly here
 	 */
-	pm_states[PM_SUSPEND_FREEZE] = pm_labels[relative_states ? 0 : 2];
+	mem_sleep_states[PM_SUSPEND_FREEZE] = mem_sleep_labels[PM_SUSPEND_FREEZE];
+
+#ifdef CONFIG_PM_SLEEP_MONITOR
+	init_suspend_monitor_thread();
+#endif
+
 }
 
-static int __init sleep_states_setup(char *str)
+static int __init mem_sleep_default_setup(char *str)
 {
-	relative_states = !strncmp(str, "1", 1);
+	suspend_state_t state;
+
+	for (state = PM_SUSPEND_FREEZE; state <= PM_SUSPEND_MEM; state++)
+		if (mem_sleep_labels[state] &&
+		    !strcmp(str, mem_sleep_labels[state])) {
+			mem_sleep_default = state;
+			break;
+		}
+
 	return 1;
 }
-
-__setup("relative_sleep_states=", sleep_states_setup);
+__setup("mem_sleep_default=", mem_sleep_default_setup);
 
 /**
  * suspend_set_ops - Set the global suspend method table.
@@ -143,21 +309,21 @@ __setup("relative_sleep_states=", sleep_states_setup);
  */
 void suspend_set_ops(const struct platform_suspend_ops *ops)
 {
-	suspend_state_t i;
-	int j = 0;
-
-	lock_system_sleep();
+    lock_system_sleep();
 
 	suspend_ops = ops;
-	for (i = PM_SUSPEND_MEM; i >= PM_SUSPEND_STANDBY; i--)
-		if (valid_state(i)) {
-			pm_states[i] = pm_labels[j++];
-		} else if (!relative_states) {
-			pm_states[i] = NULL;
-			j++;
-		}
 
-	pm_states[PM_SUSPEND_FREEZE] = pm_labels[j];
+	if (valid_state(PM_SUSPEND_STANDBY)) {
+		mem_sleep_states[PM_SUSPEND_STANDBY] = mem_sleep_labels[PM_SUSPEND_STANDBY];
+		pm_states[PM_SUSPEND_STANDBY] = "standby";
+		if (mem_sleep_default == PM_SUSPEND_STANDBY)
+			mem_sleep_current = PM_SUSPEND_STANDBY;
+	}
+	if (valid_state(PM_SUSPEND_MEM)) {
+		mem_sleep_states[PM_SUSPEND_MEM] = mem_sleep_labels[PM_SUSPEND_MEM];
+		if (mem_sleep_default == PM_SUSPEND_MEM)
+			mem_sleep_current = PM_SUSPEND_MEM;
+	}
 
 	unlock_system_sleep();
 }
@@ -295,6 +461,7 @@ static int suspend_prepare(suspend_state_t state)
 	if (!error)
 		return 0;
 
+	log_suspend_abort_reason("One or more tasks refusing to freeze");
 	suspend_stats.failed_freeze++;
 	dpm_save_failed_step(SUSPEND_FREEZE);
  Finish:
@@ -324,7 +491,6 @@ void __weak arch_suspend_enable_irqs(void)
  */
 static int suspend_enter(suspend_state_t state, bool *wakeup)
 {
-	char suspend_abort[MAX_SUSPEND_ABORT_LEN];
 	int error, last_dev;
 
 	error = platform_suspend_prepare(state);
@@ -382,6 +548,10 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
 	arch_suspend_disable_irqs();
 	BUG_ON(!irqs_disabled());
 
+#ifdef CONFIG_PM_SLEEP_MONITOR
+	stop_suspend_mon();
+#endif
+
 	error = syscore_suspend();
 	if (!error) {
 		*wakeup = pm_wakeup_pending();
@@ -393,13 +563,16 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
 				state, false);
 			events_check_enabled = false;
 		} else if (*wakeup) {
-			pm_get_active_wakeup_sources(suspend_abort,
-				MAX_SUSPEND_ABORT_LEN);
-			log_suspend_abort_reason(suspend_abort);
 			error = -EBUSY;
 		}
+
+		//start_logging_wakeup_reasons();
 		syscore_resume();
 	}
+
+#ifdef CONFIG_PM_SLEEP_MONITOR
+	start_suspend_mon();
+#endif
 
 	arch_suspend_enable_irqs();
 	BUG_ON(irqs_disabled());
@@ -544,6 +717,23 @@ static int enter_state(suspend_state_t state)
 	return error;
 }
 
+static struct timespec ts_start;
+static struct timespec ts_end;
+static void pm_suspend_stats(bool start)
+{
+	long sec_int, nsec_int, elapsed;
+	if( start ) {
+		getnstimeofday(&ts_start);
+		return;
+	}
+	getnstimeofday(&ts_end);
+	sec_int = (long)ts_end.tv_sec - (long)ts_start.tv_sec;
+	nsec_int = (long)ts_end.tv_nsec - (long)ts_start.tv_nsec;
+	elapsed = (sec_int*1000) + (nsec_int/1000000);
+	pr_info("PM: suspend elapsed %ld msec\n",elapsed);
+}
+
+
 static void pm_suspend_marker(char *annotation)
 {
 	struct timespec ts;
@@ -551,9 +741,9 @@ static void pm_suspend_marker(char *annotation)
 
 	getnstimeofday(&ts);
 	rtc_time_to_tm(ts.tv_sec, &tm);
-	pr_info("PM: suspend %s %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n",
-		annotation, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-		tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
+	//pr_debug("PM: suspend %s %d-%02d-%02d %02d:%02d:%02d.%09lu UTC\n",
+	//	annotation, tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+	//	tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec);
 }
 
 /**
@@ -571,13 +761,27 @@ int pm_suspend(suspend_state_t state)
 		return -EINVAL;
 
 	pm_suspend_marker("entry");
+    pm_suspend_stats(true);
+
+#ifdef CONFIG_PM_SLEEP_MONITOR
+	start_suspend_mon();
+#endif
+
+//	gpio_set_value(slst_gpio_base_id + PROC_AWAKE_ID, 0);
 	error = enter_state(state);
+//	gpio_set_value(slst_gpio_base_id + PROC_AWAKE_ID, 1);
 	if (error) {
 		suspend_stats.fail++;
 		dpm_save_failed_errno(error);
 	} else {
 		suspend_stats.success++;
 	}
+
+#ifdef CONFIG_PM_SLEEP_MONITOR
+	stop_suspend_mon();
+#endif
+
+    pm_suspend_stats(false);
 	pm_suspend_marker("exit");
 	return error;
 }
