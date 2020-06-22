@@ -1675,17 +1675,20 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 	ts->int_trigger_type = INT_TRIGGER_TYPE;
 
 	/*---set input device info.---*/
-	ts->input_dev->evbit[0] = BIT_MASK(EV_SYN) | BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
-	ts->input_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
-	ts->input_dev->propbit[0] = BIT(INPUT_PROP_DIRECT);
+	__set_bit(EV_SYN, ts->input_dev->evbit);
+	__set_bit(EV_KEY, ts->input_dev->evbit);
+	__set_bit(EV_ABS, ts->input_dev->evbit);
+	__set_bit(BTN_TOUCH, ts->input_dev->keybit);
+	__set_bit(BTN_TOOL_FINGER, ts->input_dev->keybit);
 
 #if MT_PROTOCOL_B
-	input_mt_init_slots(ts->input_dev, ts->max_touch_num, 0);
+	input_mt_init_slots(ts->input_dev, ts->max_touch_num, INPUT_MT_DIRECT);
 #endif
 
 	input_set_abs_params(ts->input_dev, ABS_MT_PRESSURE, 0, TOUCH_FORCE_NUM, 0, 0);    /*pressure = TOUCH_FORCE_NUM*/
 
 #if TOUCH_MAX_FINGER_NUM > 1
+	input_set_abs_params(ts->input_dev, ABS_MT_TOUCH_MINOR, 0, 255, 0, 0);	  /*area = 255*/
 	input_set_abs_params(ts->input_dev, ABS_MT_TOUCH_MAJOR, 0, 255, 0, 0);	  /*area = 255*/
 
 	input_set_abs_params(ts->input_dev, ABS_MT_POSITION_X, 0, ts->abs_x_max - 1, 0, 0);
@@ -1709,10 +1712,13 @@ static int32_t nvt_ts_probe(struct i2c_client *client, const struct i2c_device_i
 	}
 #endif
 
-	scnprintf(ts->phys, PAGE_SIZE, "input/ts");
 	ts->input_dev->name = NVT_TS_NAME;
+	scnprintf(ts->phys, PAGE_SIZE, "%s/ts",	ts->input_dev->name);
 	ts->input_dev->phys = ts->phys;
 	ts->input_dev->id.bustype = BUS_I2C;
+	ts->input_dev->id.vendor = 0x0001;
+	ts->input_dev->id.product = 0x0002;
+	ts->input_dev->id.version = 0x0100;
 	ts->input_dev->event = nvt_input_event;
 	input_set_drvdata(ts->input_dev, ts);
 
@@ -2087,6 +2093,7 @@ static int drm_notifier_callback(struct notifier_block *self, unsigned long even
 
 	return 0;
 }
+/*
 static int nvt_pm_suspend(struct device *dev)
 {
 	if (device_may_wakeup(dev) && ts->gesture_enabled) {
@@ -2109,11 +2116,11 @@ static int nvt_pm_resume(struct device *dev)
 	complete(&ts->dev_pm_suspend_completion);
 
 	return 0;
-}
+}*/
 
 static const struct dev_pm_ops nvt_dev_pm_ops = {
-	.suspend = nvt_pm_suspend,
-	.resume = nvt_pm_resume,
+/*	.suspend = nvt_pm_suspend,
+	.resume = nvt_pm_resume,*/
 };
 #endif
 
