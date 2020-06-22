@@ -360,7 +360,7 @@
 	qcom,fg-jeita-thresholds = <0 10 45 55>;
 	qcom,fg-esr-clamp-mohms = <60>;
 	qcom,battery-data = <&mtp_batterydata>;
-	qcom,fg-batt-temp-delta = <2>;
+	qcom,fg-batt-temp-delta = <6>;
     qcom,fg-delta-soc-thr = <1>;
     qcom,slope-limit-temp-threshold = <100>;
 	qcom,slope-limit-coeffs = <1 1 1 1>;
