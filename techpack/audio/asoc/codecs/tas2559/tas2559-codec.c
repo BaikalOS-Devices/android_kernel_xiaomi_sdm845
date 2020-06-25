@@ -78,7 +78,6 @@ static int tas2559_codec_suspend(struct snd_soc_codec *pCodec)
 
 	mutex_lock(&pTAS2559->codec_lock);
 
-	dev_dbg(pTAS2559->dev, "%s\n", __func__);
 	pTAS2559->runtime_suspend(pTAS2559);
 
 	mutex_unlock(&pTAS2559->codec_lock);
@@ -92,7 +91,6 @@ static int tas2559_codec_resume(struct snd_soc_codec *pCodec)
 
 	mutex_lock(&pTAS2559->codec_lock);
 
-	dev_dbg(pTAS2559->dev, "%s\n", __func__);
 	pTAS2559->runtime_resume(pTAS2559);
 
 	mutex_unlock(&pTAS2559->codec_lock);
