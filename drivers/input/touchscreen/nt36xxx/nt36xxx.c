@@ -2131,6 +2131,7 @@ static int drm_notifier_callback(struct notifier_block *self, unsigned long even
 
 	return 0;
 }
+/*
 static int nvt_pm_suspend(struct device *dev)
 {
 	if (device_may_wakeup(dev) && ts->gesture_enabled) {
@@ -2154,7 +2155,7 @@ static int nvt_pm_resume(struct device *dev)
 
 	return 0;
 }
-
+*/
 static const struct dev_pm_ops nvt_dev_pm_ops = {
 /*	.suspend = nvt_pm_suspend,
 	.resume = nvt_pm_resume,*/
