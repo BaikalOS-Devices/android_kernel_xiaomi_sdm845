@@ -2787,6 +2787,7 @@ wma_wake_reason_ap_assoc_lost(t_wma_handle *wma, void *event, uint32_t len)
 	return 0;
 }
 
+#ifdef WMA_DEBUG_ALWAYS
 #ifdef WLAN_DEBUG
 static const char *wma_vdev_type_str(uint32_t vdev_type)
 {
@@ -2809,6 +2810,7 @@ static const char *wma_vdev_type_str(uint32_t vdev_type)
 		return "unknown";
 	}
 }
+#endif
 #endif
 
 static int wma_wake_event_packet(
