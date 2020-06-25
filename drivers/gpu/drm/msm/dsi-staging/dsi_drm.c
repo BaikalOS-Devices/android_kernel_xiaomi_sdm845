@@ -197,6 +197,7 @@ static void dsi_bridge_pre_enable(struct drm_bridge *bridge)
 	if (dev->doze_state == DRM_BLANK_POWERDOWN) {
 		dev->doze_state = DRM_BLANK_UNBLANK;
 		pr_info("%s power on from power off\n", __func__);
+        return;
 	}
 
 	event = dev->doze_state;
@@ -308,6 +309,7 @@ static void dsi_bridge_pre_enable(struct drm_bridge *bridge)
 
 int dsi_bridge_interface_enable(int timeout)
 {
+/*
 	int ret = 0;
 
 	ret = wait_event_timeout(resume_wait_q,
@@ -337,6 +339,8 @@ int dsi_bridge_interface_enable(int timeout)
 
 	mutex_unlock(&gbridge->base.lock);
 	return ret;
+*/
+    return 0;
 }
 EXPORT_SYMBOL(dsi_bridge_interface_enable);
 
