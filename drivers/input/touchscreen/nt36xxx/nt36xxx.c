@@ -2155,11 +2155,11 @@ static int nvt_pm_resume(struct device *dev)
 
 	return 0;
 }
-*/
+
 static const struct dev_pm_ops nvt_dev_pm_ops = {
-/*	.suspend = nvt_pm_suspend,
-	.resume = nvt_pm_resume,*/
-};
+	.suspend = nvt_pm_suspend,
+	.resume = nvt_pm_resume,
+};*/
 #elif defined(CONFIG_HAS_EARLYSUSPEND_SDV_SDV)
 /*******************************************************
 Description:
@@ -2214,9 +2214,9 @@ static struct i2c_driver nvt_i2c_driver = {
 	.driver = {
 		.name	= NVT_I2C_NAME,
 		.owner	= THIS_MODULE,
-#ifdef CONFIG_PM
-		.pm = &nvt_dev_pm_ops,
-#endif
+//#ifdef CONFIG_PM
+//		.pm = &nvt_dev_pm_ops,
+//#endif
 #ifdef CONFIG_OF
 		.of_match_table = nvt_match_table,
 #endif
