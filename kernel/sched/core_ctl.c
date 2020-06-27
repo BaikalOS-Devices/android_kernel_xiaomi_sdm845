@@ -808,6 +808,8 @@ static void try_to_isolate(struct cluster_data *cluster, unsigned int need)
 		if (c->is_busy)
 			continue;
 
+        if (c->cpu == 0 ) continue;
+
 		/*
 		 * We isolate only the not_preferred CPUs. If none
 		 * of the CPUs are selected as not_preferred, then
@@ -827,7 +829,7 @@ static void try_to_isolate(struct cluster_data *cluster, unsigned int need)
 			move_cpu_lru(c);
 			nr_isolated++;
 		} else {
-			pr_debug("Unable to isolate CPU%u\n", c->cpu);
+			pr_info("Unable to isolate CPU%u\n", c->cpu);
 		}
 		cluster->active_cpus = get_active_cpu_count(cluster);
 		spin_lock_irqsave(&state_lock, flags);
