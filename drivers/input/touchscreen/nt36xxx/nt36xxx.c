@@ -63,6 +63,7 @@ extern int32_t nvt_mp_proc_init(void);
 struct nvt_ts_data *ts;
 
 static struct workqueue_struct *nvt_wq;
+static bool screen_on = 0;
 
 #if BOOT_UPDATE_FIRMWARE
 static struct workqueue_struct *nvt_fwu_wq;
@@ -1273,6 +1274,8 @@ static irqreturn_t nvt_ts_irq_handler(int32_t irq, void *dev_id)
 	if (bTouchIsAwake == 0) {
 		dev_dbg(&ts->client->dev, "%s gesture wakeup\n", __func__);
 	}
+
+    pm_wakeup_event(&ts->client->dev,50);
 	queue_work(nvt_wq, &ts->nvt_work);
 
 	return IRQ_HANDLED;
@@ -2086,6 +2089,7 @@ static void nvt_resume_work(struct work_struct *work)
 	struct nvt_ts_data *ts =
 		container_of(work, struct nvt_ts_data, resume_work);
 	nvt_ts_resume(&ts->client->dev);
+    screen_on = 1;
 }
 
 #if defined(CONFIG_DRM)
@@ -2106,6 +2110,7 @@ static int drm_notifier_callback(struct notifier_block *self, unsigned long even
 				/*drm_dsi_ulps_suspend_enable(true);*/
 			}
 			flush_workqueue(ts->event_wq);
+            screen_on = 0;
 			nvt_ts_suspend(&ts->client->dev);
 		} else if (*blank == DRM_BLANK_UNBLANK) {
 			if (ts->gesture_enabled) {
@@ -2131,14 +2136,14 @@ static int drm_notifier_callback(struct notifier_block *self, unsigned long even
 
 	return 0;
 }
-/*
+
 static int nvt_pm_suspend(struct device *dev)
 {
-	if (device_may_wakeup(dev) && ts->gesture_enabled) {
+	if (device_may_wakeup(dev) && (ts->gesture_enabled || screen_on)) {
 		NVT_LOG("enable touch irq wake\n");
 		enable_irq_wake(ts->client->irq);
 	}
-	ts->dev_pm_suspend = true;
+	if( !screen_on ) ts->dev_pm_suspend = true;
 	reinit_completion(&ts->dev_pm_suspend_completion);
 
 	return 0;
@@ -2146,7 +2151,7 @@ static int nvt_pm_suspend(struct device *dev)
 
 static int nvt_pm_resume(struct device *dev)
 {
-	if (device_may_wakeup(dev) && ts->gesture_enabled) {
+	if (device_may_wakeup(dev) && (ts->gesture_enabled || screen_on)) {
 		NVT_LOG("disable touch irq wake\n");
 		disable_irq_wake(ts->client->irq);
 	}
@@ -2159,7 +2164,8 @@ static int nvt_pm_resume(struct device *dev)
 static const struct dev_pm_ops nvt_dev_pm_ops = {
 	.suspend = nvt_pm_suspend,
 	.resume = nvt_pm_resume,
-};*/
+};
+
 #elif defined(CONFIG_HAS_EARLYSUSPEND_SDV_SDV)
 /*******************************************************
 Description:
@@ -2214,9 +2220,9 @@ static struct i2c_driver nvt_i2c_driver = {
 	.driver = {
 		.name	= NVT_I2C_NAME,
 		.owner	= THIS_MODULE,
-//#ifdef CONFIG_PM
-//		.pm = &nvt_dev_pm_ops,
-//#endif
+#ifdef CONFIG_PM
+		.pm = &nvt_dev_pm_ops,
+#endif
 #ifdef CONFIG_OF
 		.of_match_table = nvt_match_table,
 #endif
