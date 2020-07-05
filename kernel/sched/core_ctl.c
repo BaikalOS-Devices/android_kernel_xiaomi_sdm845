@@ -800,15 +800,17 @@ static void try_to_isolate(struct cluster_data *cluster, unsigned int need)
 		if (!num_cpus--)
 			break;
 
-		if (!is_active(c))
-			continue;
 		if (cluster->active_cpus == need)
 			break;
+
+		if (!is_active(c))
+			continue;
 		/* Don't isolate busy CPUs. */
 		if (c->is_busy)
 			continue;
 
-        if (c->cpu == 0 ) continue;
+        if (c->cpu == 0 ) 
+            continue;
 
 		/*
 		 * We isolate only the not_preferred CPUs. If none
