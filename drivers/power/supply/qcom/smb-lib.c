@@ -457,7 +457,7 @@ int smblib_set_charge_param(struct smb_charger *chg,
 		return rc;
 	}
 
-	smblib_dbg(chg, PR_REGISTER, "%s = %d (0x%02x)\n",
+	smblib_err(chg, "%s = %d (0x%02x)\n",
 		   param->name, val_u, val_raw);
 
 	return rc;
@@ -2565,6 +2565,7 @@ static void smblib_reg_work(struct work_struct *work)
 #define PD_MICRO_9V		9000000
 static int smblib_therm_charging(struct smb_charger *chg)
 {
+	union power_supply_propval prop = {0, };
 	int thermal_icl_ua = 0;
 	int rc;
 
@@ -2607,21 +2608,44 @@ static int smblib_therm_charging(struct smb_charger *chg)
 		break;
 	}
 
+	prop.intval = thermal_icl_ua;
+	rc = power_supply_set_property(chg->batt_psy,
+			POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX, &prop);
+
 	if (chg->system_temp_level == 0) {
+
+		pr_info("thermal_icl_ua is MAX, chg->system_temp_level: 0\n");
+
 		/* if therm_lvl_sel is 0, clear thermal voter */
 		rc = vote(chg->usb_icl_votable, THERMAL_DAEMON_VOTER, false, 0);
 		if (rc < 0)
 			pr_err("Couldn't disable USB thermal ICL vote rc=%d\n",
 				rc);
+
+		rc = vote(chg->fcc_votable, THERMAL_DAEMON_VOTER, false, 0);
+
+		if (rc < 0)
+			pr_err("Couldn't disable FCC thermal vote rc=%d\n",
+				rc);
+
 	} else {
 		pr_info("thermal_icl_ua is %d, chg->system_temp_level: %d\n",
 				thermal_icl_ua, chg->system_temp_level);
 
 		rc = vote(chg->usb_icl_votable, THERMAL_DAEMON_VOTER, true,
 					thermal_icl_ua);
+
 		if (rc < 0)
-			pr_err("Couldn't disable USB thermal ICL vote rc=%d\n",
+			pr_err("Couldn't set USB thermal ICL vote rc=%d\n",
 				rc);
+
+		rc = vote(chg->fcc_votable, THERMAL_DAEMON_VOTER, true,
+					thermal_icl_ua);
+
+		if (rc < 0)
+			pr_err("Couldn't set FCC thermal ICL vote rc=%d\n",
+				rc);
+
 	}
 
 	return rc;
@@ -2649,14 +2673,17 @@ int smblib_set_prop_system_temp_level(struct smb_charger *chg,
 	if (val->intval > chg->thermal_levels)
 		return -EINVAL;
 
+    pr_err("thermal temp_level %d\n", val->intval);
+
 	chg->system_temp_level = val->intval;
 
 	if (!chg->typec_present)
 		return 0;
 
 	if (chg->system_temp_level >= chg->thermal_levels)
-		return vote(chg->chg_disable_votable,
-			THERMAL_DAEMON_VOTER, true, 0);
+        chg->system_temp_level = chg->thermal_levels - 1;
+		//return vote(chg->chg_disable_votable,
+		//	THERMAL_DAEMON_VOTER, true, 0);
 
 	vote(chg->chg_disable_votable, THERMAL_DAEMON_VOTER, false, 0);
 
@@ -4882,6 +4909,7 @@ static void smblib_handle_apsd_done(struct smb_charger *chg, bool rising)
 
 #ifdef CONFIG_THERMAL
 	val.intval = chg->system_temp_level;
+    smblib_err(chg, "set therm_level=%d\n", val.intval);
 	rc = power_supply_set_property(chg->batt_psy, POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT, &val);
 	if (rc < 0) {
 		smblib_err(chg, "Could not set charger control limit =%d\n", rc);
