@@ -253,6 +253,26 @@ static void cpu_input_boost_input_event(struct input_handle *handle,
 	queue_work(b->wq, &b->input_boost);
 }
 
+static bool forced_boost = 0;
+
+int cpu_input_boost_forced_set(const char *val, const struct kernel_param *kp)
+{
+    int res = param_set_ushort(val, kp); // Use helper for write variable
+    if( res == 0 )
+    {
+		cpu_input_boost_kick_max(CONFIG_WAKE_BOOST_DURATION_MS);
+    }
+    return res;
+}
+
+const struct kernel_param_ops cpu_input_boost_forced_ops = 
+{
+    .set = &cpu_input_boost_forced_set, // Use our setter ...
+    .get = &param_get_bool, // .. and standard getter
+};
+
+module_param_cb(forced_boost, &cpu_input_boost_forced_ops, &forced_boost, 0644);
+
 static int cpu_input_boost_input_connect(struct input_handler *handler,
 	struct input_dev *dev, const struct input_device_id *id)
 {
