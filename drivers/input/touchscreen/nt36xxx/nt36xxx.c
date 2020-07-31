@@ -841,60 +841,6 @@ static int nvt_parse_dt(struct device *dev)
 }
 #endif
 
-static short fw_variant = 0;
-
-static const char *nvt_get_config(struct nvt_ts_data *ts)
-{
-	int i;
-    bool second = 0;
-
-	for (i = 0; i < ts->config_array_size; i++) {
-		if ((ts->lockdown_info[0] ==
-		     ts->config_array[i].tp_vendor) &&
-		     (ts->lockdown_info[3] ==
-		     ts->config_array[i].tp_hw_version))
-            {
-                if( fw_variant == 1 && second == 0 )  {
-                    second = 1;
-                    continue;
-                }
-    			break;
-            }
-	}
-
-	if (i >= ts->config_array_size) {
-		NVT_LOG("can't find right config\n");
-		return BOOT_UPDATE_FIRMWARE_NAME;
-	}
-
-	NVT_LOG("Choose config %d: %s", i,
-		 ts->config_array[i].nvt_cfg_name);
-	ts->current_index = i;
-
-	return ts->config_array[i].nvt_cfg_name;
-}
-
-
-int fw_variant_set(const char *val, const struct kernel_param *kp)
-{
-    unsigned short* pvalue = kp->arg; // Pointer to actual parameter variable.
-    int res = param_set_ushort(val, kp); // Use helper for write variable
-    if( res == 0 && fw_variant >= 0 && fw_variant <=1 )
-    {
-    	ts->fw_name = nvt_get_config(ts);
-        NVT_ERR("set firmware variant %d\n", *pvalue);
-        Boot_Update_Firmware(0);
-    }
-    return res;
-}
-
-const struct kernel_param_ops fw_variant_ops = 
-{
-    .set = &fw_variant_set, // Use our setter ...
-    .get = &param_get_ushort, // .. and standard getter
-};
-
-module_param_cb(fw_variant, &fw_variant_ops, &fw_variant, 0644);
 
 static int nvt_get_reg(struct nvt_ts_data *ts, bool get)
 {
@@ -1617,14 +1563,78 @@ static ssize_t nvt_panel_display_show(struct device *dev,
 	return snprintf(buf, PAGE_SIZE, "%c\n", ts->lockdown_info[1]);
 }
 
+
+static short fw_variant = 0;
+
+static const char *nvt_get_config(struct nvt_ts_data *ts)
+{
+	int i;
+    bool second = 0;
+
+	for (i = 0; i < ts->config_array_size; i++) {
+		if ((ts->lockdown_info[0] ==
+		     ts->config_array[i].tp_vendor) &&
+		     (ts->lockdown_info[3] ==
+		     ts->config_array[i].tp_hw_version))
+            {
+                if( fw_variant == 1 && second == 0 )  {
+                    second = 1;
+                    continue;
+                }
+    			break;
+            }
+	}
+
+	if (i >= ts->config_array_size) {
+		NVT_LOG("can't find right config\n");
+		return BOOT_UPDATE_FIRMWARE_NAME;
+	}
+
+	NVT_LOG("Choose config %d: %s", i,
+		 ts->config_array[i].nvt_cfg_name);
+	ts->current_index = i;
+
+	return ts->config_array[i].nvt_cfg_name;
+}
+
+
+static ssize_t nvt_fw_variant_show(struct device *dev,
+				 struct device_attribute *attr, char *buf)
+{
+	return snprintf(buf, PAGE_SIZE, "%hd\n", fw_variant);
+}
+
+
+static ssize_t nvt_fw_variant_store(struct device *dev,
+				  struct device_attribute *attr,
+				  const char *buf, size_t count)
+{
+    short variant = -1;
+    sscanf(buf,"%hd",&variant);
+    
+    if(  variant >= 0 && variant <=1 )
+    {
+        fw_variant = variant;
+    	ts->fw_name = nvt_get_config(ts);
+        NVT_ERR("set firmware variant %hd (%s)\n", fw_variant, ts->fw_name);
+        Boot_Update_Firmware(0);
+    	return count;
+    }
+    return -1;
+}
+
+
 static DEVICE_ATTR(panel_vendor, (S_IRUGO), nvt_panel_vendor_show, NULL);
 static DEVICE_ATTR(panel_color, (S_IRUGO), nvt_panel_color_show, NULL);
 static DEVICE_ATTR(panel_display, (S_IRUGO), nvt_panel_display_show, NULL);
+static DEVICE_ATTR(fw_variant, (S_IRUGO | S_IWUSR | S_IWGRP), nvt_fw_variant_show,nvt_fw_variant_store);
+
 
 static struct attribute *nvt_attr_group[] = {
 	&dev_attr_panel_vendor.attr,
 	&dev_attr_panel_color.attr,
 	&dev_attr_panel_display.attr,
+	&dev_attr_fw_variant.attr,
 	NULL,
 };
 
