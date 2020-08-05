@@ -123,6 +123,13 @@ const uint16_t gesture_key_array[] = {
 
 static uint8_t bTouchIsAwake;
 
+#if NVT_TOUCH_ESD_PROTECT
+static bool esd_check_enable;
+module_param(esd_check_enable, bool, 0644);
+MODULE_PARM_DESC(esd_check_enable, "Enable ESD protection");
+#endif
+
+
 /*******************************************************
 Description:
 	Novatek touchscreen i2c read function.
@@ -1018,6 +1025,8 @@ static void nvt_esd_check_func(struct work_struct *work)
 {
 	unsigned int timer = jiffies_to_msecs(jiffies - irq_timer);
 
+
+    if( !esd_check_enable ) return;
     /*
 	*NVT_ERR("esd_check = %d (retry %d/%d)\n", esd_check, esd_retry, esd_retry_max);	//DEBUG
     */
@@ -1129,10 +1138,12 @@ static void nvt_ts_work_func(struct work_struct *work)
 	}
 
 #if NVT_TOUCH_ESD_PROTECT
-	if (nvt_fw_recovery(point_data)) {
-		nvt_esd_check_enable(true);
-		goto XFER_ERROR;
-	}
+    if( esd_check_enable ) {
+    	if (nvt_fw_recovery(point_data)) {
+    		nvt_esd_check_enable(true);
+    		goto XFER_ERROR;
+    	}
+    }
 #endif /* #if NVT_TOUCH_ESD_PROTECT */
 
 #if WAKEUP_GESTURE
