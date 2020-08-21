@@ -102,7 +102,7 @@
  * show debug log info
  * enable it for debug, disable it for release
  */
-#define FTS_DEBUG_EN                            1
+#define FTS_DEBUG_EN                            0
 
 /*
  * Linux MultiTouch Protocol
@@ -126,23 +126,23 @@
  * ESD check & protection
  * default: disable
  */
-#define FTS_ESDCHECK_EN                         0
+#define FTS_ESDCHECK_EN                         1
 
 /*
  * Glove mode enable
  * 1: enable, 0:disable(default)
  */
-#define FTS_GLOVE_EN                            0
+#define FTS_GLOVE_EN                            1
 /*
  * cover enable
  * 1: enable, 0:disable(default)
  */
-#define FTS_COVER_EN                            0
+#define FTS_COVER_EN                            1
 /*
  * Charger enable
  * 1: enable, 0:disable(default)
  */
-#define FTS_CHARGER_EN                          0
+#define FTS_CHARGER_EN                          1
 
 /*
  * Nodes for tools, please keep enable

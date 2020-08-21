@@ -67,6 +67,8 @@ struct fts_esdcheck_st {
 * Static variables
 *****************************************************************************/
 static struct fts_esdcheck_st fts_esdcheck_data;
+static bool esd_mode_enabled = 0;
+
 
 /*****************************************************************************
 * Global variable or extern global variabls/functions
@@ -376,7 +378,7 @@ int fts_esdcheck_switch(bool enable)
 {
 	struct fts_ts_data *ts_data = fts_data;
 	FTS_FUNC_ENTER();
-	if (fts_esdcheck_data.mode == ENABLE) {
+	if (fts_esdcheck_data.mode == ENABLE && esd_mode_enabled == 1) {
 		if (enable) {
 			FTS_DEBUG("[ESD]: ESD check start!!");
 			fts_esdcheck_data.flow_work_hold_cnt = 0;
@@ -422,7 +424,7 @@ int fts_esdcheck_suspend(void)
 int fts_esdcheck_resume(void)
 {
 	FTS_FUNC_ENTER();
-	fts_esdcheck_switch(ENABLE);
+  	fts_esdcheck_switch(ENABLE);
 	fts_esdcheck_data.suspend = 0;
 	FTS_FUNC_EXIT();
 	return 0;
@@ -443,10 +445,12 @@ static ssize_t fts_esdcheck_store(struct device *dev, struct device_attribute *a
 	if (FTS_SYSFS_ECHO_ON(buf)) {
 		FTS_DEBUG("enable esdcheck");
 		fts_esdcheck_data.mode = ENABLE;
+        esd_mode_enabled = 1;
 		fts_esdcheck_switch(ENABLE);
 	} else if (FTS_SYSFS_ECHO_OFF(buf)) {
 		FTS_DEBUG("disable esdcheck");
 		fts_esdcheck_data.mode = DISABLE;
+        esd_mode_enabled = 0;
 		fts_esdcheck_switch(DISABLE);
 	}
 	mutex_unlock(&input_dev->mutex);
@@ -530,8 +534,8 @@ int fts_esdcheck_init(struct fts_ts_data *ts_data)
 
 	memset((u8 *) & fts_esdcheck_data, 0, sizeof(struct fts_esdcheck_st));
 
-	fts_esdcheck_data.mode = ENABLE;
-	fts_esdcheck_switch(ENABLE);
+	fts_esdcheck_data.mode = DISABLE;
+	fts_esdcheck_switch(DISABLE);
 	fts_create_esd_sysfs(ts_data->client);
 	FTS_FUNC_EXIT();
 	return 0;
