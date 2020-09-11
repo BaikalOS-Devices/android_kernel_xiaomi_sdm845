@@ -3598,7 +3598,7 @@
 			thermal-governor = "step_wise";
 			trips {
 				emerg_config0: emerg-config0 {
-					temperature = <110000>;
+					temperature = <115000>;
 					hysteresis = <10000>;
 					type = "passive";
 				};
@@ -3621,7 +3621,7 @@
 			thermal-governor = "step_wise";
 			trips {
 				emerg_config1: emerg-config1 {
-					temperature = <110000>;
+					temperature = <115000>;
 					hysteresis = <10000>;
 					type = "passive";
 				};
@@ -3644,7 +3644,7 @@
 			thermal-governor = "step_wise";
 			trips {
 				emerg_config2: emerg-config2 {
-					temperature = <110000>;
+					temperature = <115000>;
 					hysteresis = <10000>;
 					type = "passive";
 				};
@@ -3667,7 +3667,7 @@
 			thermal-governor = "step_wise";
 			trips {
 				emerg_config3: emerg-config3 {
-					temperature = <110000>;
+					temperature = <115000>;
 					hysteresis = <10000>;
 					type = "passive";
 				};
@@ -3690,7 +3690,7 @@
 			thermal-governor = "step_wise";
 			trips {
 				emerg_config4: emerg-config4 {
-					temperature = <110000>;
+					temperature = <115000>;
 					hysteresis = <10000>;
 					type = "passive";
 				};
@@ -3713,7 +3713,7 @@
 			thermal-governor = "step_wise";
 			trips {
 				emerg_config5: emerg-config5 {
-					temperature = <110000>;
+					temperature = <115000>;
 					hysteresis = <10000>;
 					type = "passive";
 				};
@@ -3783,8 +3783,8 @@
 
 			trips {
 				active-config {
-					temperature = <95000>;
-					hysteresis = <30000>;
+					temperature = <110000>;
+					hysteresis = <10000>;
 					type = "passive";
 				};
 			};
@@ -3799,8 +3799,8 @@
 
 			trips {
 				active-config {
-					temperature = <95000>;
-					hysteresis = <30000>;
+					temperature = <110000>;
+					hysteresis = <10000>;
 					type = "passive";
 				};
 			};
