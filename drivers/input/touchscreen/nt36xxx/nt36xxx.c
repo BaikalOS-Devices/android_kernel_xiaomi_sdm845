@@ -1558,8 +1558,14 @@ static ssize_t nvt_fw_variant_store(struct device *dev,
     {
         fw_variant = variant;
     	ts->fw_name = nvt_get_config(ts);
-        NVT_ERR("set firmware variant %hd (%s)\n", fw_variant, ts->fw_name);
-        Boot_Update_Firmware(0);
+        //Boot_Update_Firmware(0);
+        if( nvt_fwu_wq )  {
+            NVT_ERR("set firmware variant %hd (%s)\n", fw_variant, ts->fw_name);
+            queue_delayed_work(nvt_fwu_wq, &ts->nvt_fwu_work, msecs_to_jiffies(500));
+        } else {
+            NVT_ERR("Can't set firmware variant %hd (%s). Not update workqueue initialized.\n", fw_variant, ts->fw_name);
+        }
+
     	return count;
     }
     return -1;
