@@ -346,18 +346,21 @@
 
 &pmi8998_fg {
 	qcom,fg-force-load-profile;
-	qcom,fg-sys-term-current = <(-300)>;
-	qcom,fg-chg-term-current = <200>;
+	qcom,fg-sys-term-current = <(-125)>;
+	qcom,fg-chg-term-current = <100>;
 	qcom,fg-auto-recharge-soc;
 	qcom,fg-recharge-soc-thr = <99>;
-	qcom,fg-cutoff-voltage = <3400>;
+	qcom,fg-cutoff-voltage = <3100>;
 	qcom,fg-cutoff-current = <200>;
-	qcom,fg-empty-voltage = <3100>;
+	qcom,fg-empty-voltage = <2900>;
 	qcom,fg-jeita-hyst-temp = <2>;
-	qcom,fg-jeita-thresholds = <0 15 45 60>;
+	qcom,fg-jeita-thresholds = <0 15 45 55>;
 	qcom,fg-esr-clamp-mohms = <60>;
 	qcom,fg-batt-temp-delta = <6>;
 	qcom,battery-data = <&mtp_batterydata>;
+    qcom,fg-delta-soc-thr = <1>;
+    qcom,slope-limit-temp-threshold = <100>;
+	qcom,slope-limit-coeffs = <1 1 1 1>;
 };
 
 &pmi8998_pwm_1 {
