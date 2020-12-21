@@ -1539,6 +1539,7 @@ static DEVICE_ATTR(wake_gesture, S_IWUSR | S_IRUSR,
 
 static struct attribute *nvt_attr_group[] = {
 	&dev_attr_wake_gesture.attr,
+    NULL
 };   
 
 
