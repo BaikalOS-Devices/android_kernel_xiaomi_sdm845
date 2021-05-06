@@ -1211,7 +1211,7 @@ static irqreturn_t nvt_ts_work_func(int irq, void *data)
 
 #if WAKEUP_GESTURE
 	if (likely(bTouchIsAwake == 0)) {
-		pm_wakeup_event(&ts->input_dev->dev, 5000);
+		pm_wakeup_event(&ts->input_dev->dev, 1000);
 	}
 #endif
 
